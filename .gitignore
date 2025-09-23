@@ -1,0 +1,101 @@
+# Created by Gemini for your awesome WinUI 3 Project! (｡･ω･｡)ﾉ♡
+
+## 1. Visual Studio & Rider IDE Files (忽略IDE自动生成的个人配置)
+#----------------------------------------------------------------
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.sln.docstates
+*.slnx.sqlite
+*_i.c
+*_p.c
+*.ncb
+*.sbr
+*.sdf
+
+# Rider
+.idea/
+
+
+## 2. .NET & WinUI 3 Build Artifacts (忽略所有编译生成的文件和文件夹)
+#----------------------------------------------------------------
+[Bb]in/
+[Oo]bj/
+publish/
+AppPackages/
+Bundle/
+Package.StoreAssociation.xml
+*.pfx
+*.msix
+*.msixbundle
+*.appx
+*.appxbundle
+*.deploy
+*.xbf
+Unmerged/
+# NuGet packages folder
+packages/
+# NuGet Symbol Packages
+*.snupkg
+# NuGet temporary files
+*.nuget.props
+*.nuget.targets
+*.nuget.cache
+# MSBuild temp
+.build/
+project.lock.json
+project.assets.json
+
+
+## 3. Project-Specific & Local Data (根据你的计划，特别为你添加的规则！)
+#----------------------------------------------------------------
+
+# 存放SQLite数据库、用户导入的文档、网页剪藏等本地数据的地方 (这个超级重要！不要提交用户数据)
+/Data/
+
+# 第三方Web库的本地副本 (比如你下载的 pdf.js 或 Monaco Editor)
+# 如果你打算用npm/yarn管理，下面的 node_modules 规则会生效
+/pdfjs-dist/
+/monaco-editor/
+
+# 本地配置文件，里面可能包含API密钥或个人路径 (建议创建一个 AppSettings.template.json 来分享配置结构)
+AppSettings.json
+launchSettings.json
+
+
+## 4. Package Managers (忽略包管理器下载的依赖)
+#----------------------------------------------------------------
+node_modules/
+jspm_packages/
+typings/
+bower_components/
+
+
+## 5. Operating System Generated Files (忽略不同操作系统产生的缓存文件)
+#----------------------------------------------------------------
+
+# Windows
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.directory
+.Trash-*
+
+
+## 6. Log & Temporary Files (忽略日志和临时文件)
+#----------------------------------------------------------------
+*.log
+*.tmp
+*.bak
+*.swp
