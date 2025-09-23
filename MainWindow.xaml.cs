@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 namespace App2
 {
     /// <summary>
-    /// 简洁现代的WinUI3主窗口 - 仿OneNote布局
+    /// 重构后的主窗口 - 使用NavigationView进行多页面导航
     /// </summary>
     public sealed partial class MainWindow : Window
     {
@@ -13,7 +13,6 @@ namespace App2
         {
             InitializeComponent();
             InitializeWindow();
-            SetupEventHandlers();
         }
 
         /// <summary>
@@ -26,35 +25,61 @@ namespace App2
         }
 
         /// <summary>
-        /// 设置事件处理器
+        /// NavigationView加载完成事件
         /// </summary>
-        private void SetupEventHandlers()
+        private void MainNavigationView_Loaded(object sender, RoutedEventArgs e)
         {
-            // 悬浮按钮事件
-            AddContentButton.Click += AddContentButton_Click;
-
-            // 延迟设置焦点到编辑器
-            this.DispatcherQueue.TryEnqueue(() =>
+            // 默认导航到笔记页面
+            if (MainNavigationView.MenuItems.Count > 0)
             {
-                ContentEditor.Focus(FocusState.Programmatic);
-            });
+                var firstItem = MainNavigationView.MenuItems[0] as NavigationViewItem;
+                if (firstItem != null)
+                {
+                    MainNavigationView.SelectedItem = firstItem;
+                    NavigateToPage(firstItem);
+                }
+            }
         }
 
         /// <summary>
-        /// 添加新内容按钮点击事件
+        /// NavigationView选择改变事件
         /// </summary>
-        private void AddContentButton_Click(object sender, RoutedEventArgs e)
+        private void MainNavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            try
+            if (args.SelectedItemContainer is NavigationViewItem item)
             {
-                // 简单演示：在编辑器中插入新内容
-                ContentEditor.Document.Selection.SetText(Microsoft.UI.Text.TextSetOptions.None,
-                    "\n\n" + DateTime.Now.ToString("yyyy-MM-dd HH:mm") + " 新增内容\n");
-                System.Diagnostics.Debug.WriteLine("添加新内容");
+                NavigateToPage(item);
             }
-            catch (Exception ex)
+        }
+
+        /// <summary>
+        /// 导航到指定页面
+        /// </summary>
+        private void NavigateToPage(NavigationViewItem item)
+        {
+            if (item?.Tag is string tag)
             {
-                System.Diagnostics.Debug.WriteLine($"添加内容时出错: {ex.Message}");
+                try
+                {
+                    // 根据Tag获取页面类型
+                    Type pageType = Type.GetType(tag);
+                    if (pageType != null)
+                    {
+                        // 导航到页面，对于PDF页面需要传递窗口参数
+                        object parameter = pageType.Name == "PdfViewerPage" ? this : null;
+                        ContentFrame.Navigate(pageType, parameter);
+
+                        System.Diagnostics.Debug.WriteLine($"导航到: {item.Content} ({tag})");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"无法找到页面类型: {tag}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"导航失败: {ex.Message}");
+                }
             }
         }
     }

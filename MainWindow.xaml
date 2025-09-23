@@ -13,215 +13,57 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Grid.RowDefinitions>
-            <!-- Pivot导航区域 -->
-            <RowDefinition Height="Auto"/>
-            <!-- 主要内容区域 -->
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <Grid>
+        <NavigationView x:Name="MainNavigationView"
+                       Loaded="MainNavigationView_Loaded"
+                       SelectionChanged="MainNavigationView_SelectionChanged"
+                       IsBackButtonVisible="Collapsed"
+                       IsSettingsVisible="True"
+                       PaneDisplayMode="LeftCompact"
+                       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-        <!-- 顶部Pivot导航 -->
-        <Pivot Grid.Row="0" 
-               Title="Note"
-               Background="{ThemeResource LayerFillColorDefaultBrush}">
-            <PivotItem Header="文件">
-                <Grid/>
-            </PivotItem>
-            <PivotItem Header="开始">
-                <Grid/>
-            </PivotItem>
-            <PivotItem Header="插入">
-                <Grid/>
-            </PivotItem>
-            <PivotItem Header="绘图">
-                <Grid/>
-            </PivotItem>
-            <PivotItem Header="历史记录">
-                <Grid/>
-            </PivotItem>
-            <PivotItem Header="审阅">
-                <Grid/>
-            </PivotItem>
-        </Pivot>
+            <NavigationView.MenuItems>
+                <!-- 笔记页面 -->
+                <NavigationViewItem Content="笔记" Tag="App2.Pages.NotePage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE70F;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
-        <!-- 主内容区域 -->
-        <Grid Grid.Row="1">
-            <!-- 悬浮工具栏 -->
-            <Border HorizontalAlignment="Center"
-               VerticalAlignment="Top"
-               Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-               BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-               BorderThickness="1"
-               CornerRadius="2"
-               Padding="20,10"
-               Margin="0,40,0,0"
-               Canvas.ZIndex="200"
-              >        
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <!-- 文件操作组 -->
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="新建" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE710;" FontSize="14"/>
-                    </Button>
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="打开" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E5;" FontSize="14"/>
-                    </Button>
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="保存" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE74E;" FontSize="14"/>
-                    </Button>
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="打印" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE2F6;" FontSize="14"/>
-                    </Button>
+                <!-- PDF查看器 -->
+                <NavigationViewItem Content="PDF" Tag="App2.Pages.PdfViewerPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xEA90;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
-                    <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
+                <!-- 浏览器 -->
+                <NavigationViewItem Content="浏览器" Tag="App2.Pages.BrowserPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE774;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
-                    <!-- 编辑操作组 -->
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="撤销" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE7A7;" FontSize="14"/>
-                    </Button>
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="重做" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE7A6;" FontSize="14"/>
-                    </Button>
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="剪切" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8C6;" FontSize="14"/>
-                    </Button>
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="复制" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8C8;" FontSize="14"/>
-                    </Button>
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="粘贴" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE77F;" FontSize="14"/>
-                    </Button>
+                <!-- 画板 -->
+                <NavigationViewItem Content="画板" Tag="App2.Pages.DrawingPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xED63;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
 
-                    <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
+            <!-- 底部菜单项 -->
+            <NavigationView.FooterMenuItems>
+                <NavigationViewItem Content="帮助">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE897;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.FooterMenuItems>
 
-                    <!-- 格式化组 -->
-                    <ToggleButton Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                                 ToolTipService.ToolTip="粗体" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8DD;" FontSize="14"/>
-                    </ToggleButton>
-                    <ToggleButton Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                                 ToolTipService.ToolTip="斜体" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8DB;" FontSize="14"/>
-                    </ToggleButton>
-                    <ToggleButton Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                                 ToolTipService.ToolTip="下划线" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8DC;" FontSize="14"/>
-                    </ToggleButton>
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="字体颜色" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE790;" FontSize="14"/>
-                    </Button>
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="高亮" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE7E6;" FontSize="14"/>
-                    </Button>
+            <!-- 主内容框架 -->
+            <Frame x:Name="ContentFrame" Margin="0"/>
 
-                    <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
-
-                    <!-- 插入组 -->
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="图片" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B9;" FontSize="14"/>
-                    </Button>
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="表格" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8EB;" FontSize="14"/>
-                    </Button>
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="链接" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE71B;" FontSize="14"/>
-                    </Button>
-
-                    <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
-
-                    <!-- 视图组 -->
-                    <Button Width="36" Height="36" Background="Transparent" BorderThickness="0" 
-                           ToolTipService.ToolTip="缩放" CornerRadius="2">
-                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE71E;" FontSize="14"/>
-                    </Button>
-                </StackPanel>
-            </Border>
-
-            <!-- 主要笔记页面 - 全宽度 -->
-            <ScrollView HorizontalAlignment="Stretch"
-                       VerticalAlignment="Stretch"
-                       HorizontalScrollMode="Auto"
-                       VerticalScrollMode="Auto"
-                       ZoomMode="Enabled"
-                       Margin="40,30,40,40">
-
-                <Border x:Name="NotePage"
-                       Background="White"
-                       BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                       BorderThickness="1"
-                       CornerRadius="2"
-                       MinHeight="1000"
-                       MinWidth="600"
-                       HorizontalAlignment="Stretch"
-                       Padding="80,60">
-
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <!-- 页面标题 -->
-                        <TextBlock Grid.Row="0"
-                                  Text="第一节课 CH1 软件体系结构概述"
-                                  FontSize="36"
-                                  FontWeight="Bold"
-                                  Foreground="Black"
-                                  Margin="0,0,0,20"/>
-
-                        <!-- 页面日期 -->
-                        <TextBlock Grid.Row="1"
-                                  Text="2025年9月22日 19:56"
-                                  FontSize="16"
-                                  Foreground="Gray"
-                                  Margin="0,0,0,40"/>
-
-                        <!-- 页面内容 -->
-                        <RichEditBox Grid.Row="2"
-                                    x:Name="ContentEditor"
-                                    BorderThickness="0"
-                                    Background="Transparent"
-                                    PlaceholderText="开始输入您的笔记内容..."
-                                    FontSize="18"
-                                    AcceptsReturn="True"
-                                    TextWrapping="Wrap"
-                                    ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                                    ScrollViewer.HorizontalScrollBarVisibility="Hidden"/>
-                    </Grid>
-                </Border>
-            </ScrollView>
-        </Grid>
-
-        <!-- 悬浮操作按钮 -->
-        <Button Grid.Row="1"
-               x:Name="AddContentButton"
-               Width="56" Height="56"
-               CornerRadius="28"
-               Background="{ThemeResource AccentFillColorDefaultBrush}"
-               BorderThickness="0"
-               HorizontalAlignment="Right"
-               VerticalAlignment="Bottom"
-               Margin="40"
-               ToolTipService.ToolTip="添加新内容">
-            <FontIcon FontFamily="Segoe MDL2 Assets" 
-                     Glyph="&#xE710;" 
-                     FontSize="20"
-                     Foreground="White"/>
-        </Button>
+        </NavigationView>
     </Grid>
 </Window>
