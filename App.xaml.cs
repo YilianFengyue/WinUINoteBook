@@ -33,6 +33,9 @@ namespace App2
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
         /// </summary>
+        /// 
+        public static Window m_window; // 添加这行
+
         public App()
         {
             InitializeComponent();
@@ -46,6 +49,7 @@ namespace App2
         {
             _window = new MainWindow();
             _window.Activate();
+            App.m_window = _window; // ★新增：保存主窗口引用，供页面取 HWND
         }
 
        

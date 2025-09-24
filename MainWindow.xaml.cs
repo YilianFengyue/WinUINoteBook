@@ -82,5 +82,13 @@ namespace App2
                 }
             }
         }
+
+        private void MainNavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        {
+            if (args.IsSettingsInvoked)
+            {
+                ContentFrame.Navigate(typeof(App2.Pages.SettingsPage));
+            }
+        }
     }
 }

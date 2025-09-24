@@ -10,7 +10,7 @@
     Title="笔记工具">
 
     <Window.SystemBackdrop>
-        <MicaBackdrop />
+        <MicaBackdrop Kind="Base"/>
     </Window.SystemBackdrop>
 
     <Grid>
@@ -18,9 +18,10 @@
                        Loaded="MainNavigationView_Loaded"
                        SelectionChanged="MainNavigationView_SelectionChanged"
                        IsBackButtonVisible="Collapsed"
+                        ItemInvoked="MainNavigationView_ItemInvoked"
                        IsSettingsVisible="True"
                        PaneDisplayMode="LeftCompact"
-                       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                       Background="Transparent">
 
             <NavigationView.MenuItems>
                 <!-- 笔记页面 -->
@@ -48,6 +49,12 @@
                 <NavigationViewItem Content="画板" Tag="App2.Pages.DrawingPage">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xED63;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem Content="测试界面" Tag="App2.Pages.TestPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE70F;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>

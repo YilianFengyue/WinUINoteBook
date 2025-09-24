@@ -59,7 +59,7 @@ project.assets.json
 # 如果你打算用npm/yarn管理，下面的 node_modules 规则会生效
 /pdfjs-dist/
 /monaco-editor/
-
+/wwwroot/ 
 # 本地配置文件，里面可能包含API密钥或个人路径 (建议创建一个 AppSettings.template.json 来分享配置结构)
 AppSettings.json
 launchSettings.json

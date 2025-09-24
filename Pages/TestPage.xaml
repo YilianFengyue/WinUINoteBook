@@ -1,0 +1,99 @@
+<Page
+    x:Class="App2.Pages.TestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="using:App2.Pages"
+    xmlns:sys="using:System"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <!-- 文本色 -->
+        <SolidColorBrush x:Key="TileTitleBrush" Color="White"/>
+        <SolidColorBrush x:Key="TileSubtitleBrush" Color="#E6FFFFFF"/>
+
+        <!-- 底部渐变：不再覆盖整图，只压底部文字区域，避免“雾面发灰” -->
+        <LinearGradientBrush x:Key="BottomFadeBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#00FFFFFF" Offset="0"/>
+            <GradientStop Color="#33000000" Offset="0.2"/>
+            <GradientStop Color="#99000000" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- 磁贴模板：图片 + 底部渐变 + 文本；用 Border 完成圆角与裁剪 -->
+        <DataTemplate x:Key="TileTemplate" x:DataType="local:TileItem">
+            <Border CornerRadius="8"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <Grid>
+                    <Image Source="{x:Bind ImageUrl}" Stretch="UniformToFill"/>
+                    <!-- 只在底部加渐变，保证图片本体鲜艳可见 -->
+                    <Rectangle Fill="{StaticResource BottomFadeBrush}" VerticalAlignment="Bottom" Height="72"/>
+                    <StackPanel VerticalAlignment="Bottom" Padding="10" Spacing="2">
+                        <TextBlock Text="{x:Bind Title}" FontWeight="SemiBold" FontSize="14"
+                                   Foreground="{StaticResource TileTitleBrush}" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{x:Bind Subtitle}" FontSize="12"
+                                   Foreground="{StaticResource TileSubtitleBrush}" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- 顶栏：尺寸 + 间距 两个滑杆 -->
+        <CommandBar Grid.Row="0" DefaultLabelPosition="Right" Margin="0,30,0,0" >
+            <AppBarElementContainer>
+                <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                    <TextBlock Text="Size" VerticalAlignment="Center"/>
+                    <Slider x:Name="SizeSlider" Minimum="120" Maximum="260" Value="180" Width="200"
+                            ValueChanged="SizeSlider_ValueChanged"/>
+                    <TextBlock Text="{x:Bind sys:String.Format('{0:F0}px', SizeSlider.Value)}"
+                               VerticalAlignment="Center" Margin="8,0,24,0"/>
+
+                    <TextBlock Text="Padding" VerticalAlignment="Center"/>
+                    <Slider x:Name="GapSlider" Minimum="0" Maximum="24" Value="4" Width="180"
+                            ValueChanged="GapSlider_ValueChanged"/>
+                    <TextBlock Text="{x:Bind sys:String.Format('{0:F0}px', GapSlider.Value)}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </AppBarElementContainer>
+
+            <AppBarButton Label="Reset" Click="ResetButton_Click">
+                <AppBarButton.Icon>
+                    <SymbolIcon Symbol="Refresh"/>
+                </AppBarButton.Icon>
+            </AppBarButton>
+        </CommandBar>
+
+        <!-- 网格：保持官方内置拖拽重排 -->
+        <GridView x:Name="TileGrid"
+                  Grid.Row="1"
+                  Padding="12,8,12,16"
+                  ItemsSource="{x:Bind Tiles, Mode=OneWay}"
+                  ItemTemplate="{StaticResource TileTemplate}"
+                  SelectionMode="None"
+                  IsItemClickEnabled="False"
+                  CanDragItems="True"
+                  CanReorderItems="True"
+                  AllowDrop="True"
+                  IsSwipeEnabled="True"
+                  ContainerContentChanging="TileGrid_ContainerContentChanging">
+            <GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsWrapGrid Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>
+
+            <!-- 只保留圆角，Margin 交给代码按“间距滑杆”实时控制 -->
+            <GridView.ItemContainerStyle>
+                <Style TargetType="GridViewItem">
+                    <Setter Property="CornerRadius" Value="8"/>
+                    <Setter Property="UseSystemFocusVisuals" Value="True"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                </Style>
+            </GridView.ItemContainerStyle>
+        </GridView>
+    </Grid>
+</Page>

@@ -4,13 +4,100 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
+
     <Grid RowDefinitions="Auto,*">
-        <CommandBar DefaultLabelPosition="Right">
-            <AppBarButton Icon="OpenFile" Label="打开 PDF" Click="OpenPdf_Click"/>
-            <AppBarButton Icon="Refresh" Label="重新载入" Click="Reload_Click"/>
-        </CommandBar>
-        <controls:WebView2 x:Name="Viewer" Grid.Row="1"/>
+        <Border Grid.Row="0"
+        Margin="12,8,12,4"
+        CornerRadius="14">
+            <Border.Background>
+                <!-- WinUI 3 用法：不写 BackgroundSource -->
+                <AcrylicBrush
+            TintColor="#CCFFFFFF"
+            TintOpacity="0.6"
+            TintLuminosityOpacity="0.8"
+            FallbackColor="#DDFFFFFF"/>
+            </Border.Background>
+
+
+            <!--  顶部标签式命令栏：三个页签（主页 / 视图 / 注释[占位]）  -->
+        <controls:TabbedCommandBar>
+            <controls:TabbedCommandBar.MenuItems>
+
+                <!--  主页：打开 / 重新载入 / 页码  -->
+                <!-- ★替换：主页页签，加入 保存为 / 打印 / 查找 -->
+                <controls:TabbedCommandBarItem Header="主页">
+                    <AppBarButton Icon="OpenFile" Label="打开 PDF" Click="OpenPdf_Click"/>
+                    <AppBarButton Icon="Refresh" Label="重新载入" Click="Reload_Click"/>
+
+                    <AppBarSeparator/>
+
+                    <AppBarButton Icon="{ui:FontIcon Glyph=&#xE112;}" Label="上一页" Click="PrevPage_Click"/>
+                    <AppBarButton Icon="{ui:FontIcon Glyph=&#xE111;}" Label="下一页" Click="NextPage_Click"/>
+
+                    <AppBarElementContainer>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock VerticalAlignment="Center" Text="页码"/>
+                            <TextBox x:Name="PageNumberBox" Width="72" PlaceholderText="1" KeyDown="PageNumberBox_KeyDown"/>
+                            <TextBlock VerticalAlignment="Center" Text="/"/>
+                            <TextBlock x:Name="PageCountText" VerticalAlignment="Center" Text="?" />
+                            <Button Content="跳转" Click="GoToPage_Click" />
+                        </StackPanel>
+                    </AppBarElementContainer>
+
+                    <AppBarSeparator/>
+
+                    <!-- ★新增：保存为（复制到用户选定位置）、打印（调系统对话框） -->
+                    <AppBarButton Icon="SaveLocal" Label="保存为" Click="SaveAs_Click"/>
+                    <AppBarButton Icon="Print" Label="打印" Click="Print_Click"/>
+
+                    <AppBarSeparator/>
+
+                    <!-- ★新增：查找 -->
+                    <AppBarElementContainer>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBox x:Name="FindBox" Width="180" PlaceholderText="查找文本" KeyDown="FindBox_KeyDown"/>
+                            <Button Content="查找" Click="FindNext_Click"/>
+                            <Button Content="上一个" Click="FindPrev_Click"/>
+                        </StackPanel>
+                    </AppBarElementContainer>
+                </controls:TabbedCommandBarItem>
+                
+                <!--  视图：缩放 / 适配 / 旋转  -->
+                <controls:TabbedCommandBarItem Header="视图">
+                    <AppBarButton Icon="{ui:FontIcon Glyph=&#xE1A3;}" Label="缩小" Click="ZoomOut_Click"/>
+                    <AppBarButton Icon="{ui:FontIcon Glyph=&#xE1A4;}" Label="放大" Click="ZoomIn_Click"/>
+                    <AppBarSeparator/>
+                    <AppBarButton Icon="{ui:FontIcon Glyph=&#xE9A6;}" Label="适应宽度" Click="FitWidth_Click"/>
+                    <AppBarButton Icon="{ui:FontIcon Glyph=&#xE9A8;}" Label="整页适配" Click="FitPage_Click"/>
+                    <AppBarSeparator/>
+                    <AppBarButton Icon="{ui:FontIcon Glyph=&#xE7AD;}" Label="顺时针旋转" Click="RotateCW_Click"/>
+                    <AppBarButton Icon="{ui:FontIcon Glyph=&#xE7AD;}" Label="逆时针旋转" Click="RotateCCW_Click"/>
+                </controls:TabbedCommandBarItem>
+
+                <controls:TabbedCommandBarItem Header="注释">
+                    <AppBarToggleButton x:Name="ToggleHighlight"
+                        Icon="{ui:FontIcon Glyph=&#xE8EC;}" Label="高亮"
+                        Click="ToggleHighlight_Click"/>
+                    <AppBarToggleButton x:Name="TogglePen"
+                        Icon="{ui:FontIcon Glyph=&#xED63;}" Label="手写"
+                        Click="TogglePen_Click"/>
+                    <AppBarButton x:Name="Erase"
+                  Icon="{ui:FontIcon Glyph=&#xE75C;}" Label="撤销"
+                  Click="Erase_Click"/>
+                    <AppBarSeparator/>
+                    <AppBarButton x:Name="SaveAnnot"
+                  Icon="{ui:FontIcon Glyph=&#xE74E;}" Label="导出带批注"
+                  Click="SaveAnnot_Click"/>
+                </controls:TabbedCommandBarItem>
+
+            </controls:TabbedCommandBar.MenuItems>
+        </controls:TabbedCommandBar>
+        </Border>
+        <!-- 用 muxc 前缀，而不是完整限定名或错误的 controls 前缀 -->
+        <muxc:WebView2 x:Name="Viewer" Grid.Row="1"/>
     </Grid>
 </Page>

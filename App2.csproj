@@ -30,7 +30,13 @@
   <Content Include="Web\**\*.*">
     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </Content>
+	  
 </ItemGroup>
+	<ItemGroup>
+		<Content Include="wwwroot\**\*.*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
   <!--
     Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
     Tools extension to be activated for this project even if the Windows App SDK Nuget
@@ -44,10 +50,20 @@
     <None Remove="Pages\DrawingPage.xaml" />
     <None Remove="Pages\NotePage.xaml" />
     <None Remove="Pages\PdfViewerPage.xaml" />
+    <None Remove="Pages\SettingsPage.xaml" />
+    <None Remove="Pages\TestPage.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.250402" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.250402" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.TabbedCommandBar" Version="8.2.250402" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4948" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250907003" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\TestPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\DrawingPage.xaml">
@@ -66,6 +82,14 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\PdfViewerPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="wwwroot\pdfjs\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\SettingsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
