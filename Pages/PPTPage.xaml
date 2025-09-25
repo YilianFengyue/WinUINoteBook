@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="App2.Pages.PPTPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:App2.Pages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dev="using:DevWinUI"
+    mc:Ignorable="d">
+
+    <!-- 页面背景 -->
+    <Page.Background>
+        <ImageBrush 
+            ImageSource="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1920&amp;h=1080&amp;fit=crop"
+            Stretch="UniformToFill"
+            Opacity="0.1"/>
+    </Page.Background>
+
+    <Grid>
+        <!-- 半透明背景层 -->
+        <Rectangle Fill="#AA000000" />
+
+        <dev:MainLandingPage x:Name="mainLandingPage" 
+                            Loaded="mainLandingPage_Loaded"
+                            HeaderImage="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&amp;h=400&amp;fit=crop"
+                            HeaderText="现代化工作平台"
+                            HeaderSubtitleText="基于WinUI 3 + DevWinUI 构建">
+
+            <!-- 头部内容区域 -->
+            <dev:MainLandingPage.HeaderContent>
+                <ScrollViewer HorizontalScrollMode="Auto" 
+                            HorizontalScrollBarVisibility="Auto"
+                            VerticalScrollBarVisibility="Hidden">
+                    <StackPanel Orientation="Horizontal" Spacing="15" Margin="10">
+
+                        <!-- PPT工具卡片 -->
+                        <dev:HeaderTile
+                            Title="PPT工具集"
+                            Description="演示文档创建与编辑"
+                            Link="https://powerpoint.com"
+                            Width="280" Height="180"
+                            CanDrag="True"
+                            AllowDrop="True"
+                            DragStarting="HeaderTile_DragStarting"
+                            Drop="HeaderTile_Drop"
+                            DragOver="HeaderTile_DragOver"
+                            Tag="PPT工具集">
+                            <dev:HeaderTile.Source>
+                                <Image Source="https://images.unsplash.com/photo-1558618047-3c8c76ca7d14?w=200&amp;h=150&amp;fit=crop" 
+                                       Stretch="UniformToFill"/>
+                            </dev:HeaderTile.Source>
+                        </dev:HeaderTile>
+
+                        <!-- 数据分析卡片 -->
+                        <dev:HeaderTile
+                            Title="数据分析"
+                            Description="图表生成与数据可视化"
+                            Link="https://excel.com"
+                            Width="280" Height="180"
+                            CanDrag="True"
+                            AllowDrop="True"
+                            DragStarting="HeaderTile_DragStarting"
+                            Drop="HeaderTile_Drop"
+                            DragOver="HeaderTile_DragOver"
+                            Tag="数据分析">
+                            <dev:HeaderTile.Source>
+                                <Image Source="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=200&amp;h=150&amp;fit=crop" 
+                                       Stretch="UniformToFill"/>
+                            </dev:HeaderTile.Source>
+                        </dev:HeaderTile>
+
+                        <!-- 日历时钟卡片 -->
+                        <dev:HeaderTile
+                            Title="智能日历"
+                            Description="时间管理与日程安排"
+                            Link="https://calendar.com"
+                            Width="280" Height="180"
+                            CanDrag="True"
+                            AllowDrop="True"
+                            DragStarting="HeaderTile_DragStarting"
+                            Drop="HeaderTile_Drop"
+                            DragOver="HeaderTile_DragOver"
+                            Tag="智能日历">
+                            <dev:HeaderTile.Source>
+                                <Image Source="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&amp;h=150&amp;fit=crop" 
+                                       Stretch="UniformToFill"/>
+                            </dev:HeaderTile.Source>
+                        </dev:HeaderTile>
+
+                        <!-- 团队协作卡片 -->
+                        <dev:HeaderTile
+                            Title="团队协作"
+                            Description="实时沟通与文件共享"
+                            Link="https://teams.com"
+                            Width="280" Height="180"
+                            CanDrag="True"
+                            AllowDrop="True"
+                            DragStarting="HeaderTile_DragStarting"
+                            Drop="HeaderTile_Drop"
+                            DragOver="HeaderTile_DragOver"
+                            Tag="团队协作">
+                            <dev:HeaderTile.Source>
+                                <Image Source="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=200&amp;h=150&amp;fit=crop" 
+                                       Stretch="UniformToFill"/>
+                            </dev:HeaderTile.Source>
+                        </dev:HeaderTile>
+
+                        <!-- 云存储卡片 -->
+                        <dev:HeaderTile
+                            Title="云端存储"
+                            Description="安全的文件存储与备份"
+                            Link="https://onedrive.com"
+                            Width="280" Height="180"
+                            CanDrag="True"
+                            AllowDrop="True"
+                            DragStarting="HeaderTile_DragStarting"
+                            Drop="HeaderTile_Drop"
+                            DragOver="HeaderTile_DragOver"
+                            Tag="云端存储">
+                            <dev:HeaderTile.Source>
+                                <Image Source="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=200&amp;h=150&amp;fit=crop" 
+                                       Stretch="UniformToFill"/>
+                            </dev:HeaderTile.Source>
+                        </dev:HeaderTile>
+
+                        <!-- 设计工具卡片 -->
+                        <dev:HeaderTile
+                            Title="设计工具"
+                            Description="创意设计与图形处理"
+                            Link="https://design.com"
+                            Width="280" Height="180"
+                            CanDrag="True"
+                            AllowDrop="True"
+                            DragStarting="HeaderTile_DragStarting"
+                            Drop="HeaderTile_Drop"
+                            DragOver="HeaderTile_DragOver"
+                            Tag="设计工具">
+                            <dev:HeaderTile.Source>
+                                <Image Source="https://images.unsplash.com/photo-1541435220206-a8852c17f76b?w=200&amp;h=150&amp;fit=crop" 
+                                       Stretch="UniformToFill"/>
+                            </dev:HeaderTile.Source>
+                        </dev:HeaderTile>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </dev:MainLandingPage.HeaderContent>
+
+            <!-- 底部内容区域 -->
+            <dev:MainLandingPage.FooterContent>
+                <StackPanel Spacing="15" Margin="20">
+                    <!-- 拖拽演示区域 -->
+                    <Border Background="#33FFFFFF" 
+                           CornerRadius="10" 
+                           Padding="20"
+                           AllowDrop="True"
+                           Drop="DropZone_Drop"
+                           DragOver="DropZone_DragOver"
+                           DragLeave="DropZone_DragLeave">
+                        <StackPanel>
+                            <TextBlock Text="🎯 拖拽演示区域" 
+                                      FontSize="20" 
+                                      FontWeight="SemiBold"
+                                      Foreground="White"
+                                      HorizontalAlignment="Center"
+                                      Margin="0,0,0,10"/>
+                            <TextBlock x:Name="DropStatusText"
+                                      Text="将上面的卡片拖拽到这里试试！" 
+                                      FontSize="14"
+                                      Foreground="LightGray"
+                                      HorizontalAlignment="Center"
+                                      TextAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 链接区域 -->
+                    <StackPanel Orientation="Horizontal" 
+                               HorizontalAlignment="Center" 
+                               Spacing="20">
+                        <HyperlinkButton Content="🚀 开发者文档" 
+                                       NavigateUri="https://docs.microsoft.com/winui"
+                                       Foreground="LightBlue"/>
+                        <HyperlinkButton Content="💻 GitHub源码" 
+                                       NavigateUri="https://github.com/Ghost1372/DevWinUI"
+                                       Foreground="LightGreen"/>
+                        <HyperlinkButton Content="🎨 设计规范" 
+                                       NavigateUri="https://docs.microsoft.com/windows/apps/design/"
+                                       Foreground="LightPink"/>
+                    </StackPanel>
+                </StackPanel>
+            </dev:MainLandingPage.FooterContent>
+        </dev:MainLandingPage>
+
+        <!-- 悬浮状态提示 -->
+        <Border x:Name="DragHint"
+               Background="#AA0078D4"
+               CornerRadius="20"
+               Padding="15,8"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Bottom"
+               Margin="20"
+               Opacity="0"
+               IsHitTestVisible="False">
+            <TextBlock Text="拖拽功能已激活 ✨" 
+                      Foreground="White"
+                      FontSize="12"/>
+        </Border>
+    </Grid>
+</Page>

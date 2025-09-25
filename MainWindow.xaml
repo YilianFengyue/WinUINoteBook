@@ -22,7 +22,9 @@
                        IsSettingsVisible="True"
                        PaneDisplayMode="LeftCompact"
                        Background="Transparent">
-
+            
+            
+            
             <NavigationView.MenuItems>
                 <!-- 笔记页面 -->
                 <NavigationViewItem Content="笔记" Tag="App2.Pages.NotePage">
@@ -51,10 +53,20 @@
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xED63;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-
+                <!--测试网格界面 -->
                 <NavigationViewItem Content="测试界面" Tag="App2.Pages.TestPage">
                     <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE70F;"/>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71D;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="PPT" Tag="App2.Pages.PPTPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE786;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="PPT" Tag="App2.Pages.TestPage2">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE756;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>

@@ -26,15 +26,12 @@
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
-   <ItemGroup>
-  <Content Include="Web\**\*.*">
-    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-  </Content>
-	  
-</ItemGroup>
 	<ItemGroup>
-		<Content Include="wwwroot\**\*.*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		<!-- 把 wwwroot 下所有文件打进 MSIX 包，同时复制到 bin\AppX -->
+		<Content Include="wwwroot\**\*">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<IncludeInPackage>true</IncludeInPackage>
+			<PackagePath>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
 		</Content>
 	</ItemGroup>
   <!--
@@ -50,13 +47,20 @@
     <None Remove="Pages\DrawingPage.xaml" />
     <None Remove="Pages\NotePage.xaml" />
     <None Remove="Pages\PdfViewerPage.xaml" />
+    <None Remove="Pages\PPTPage.xaml" />
     <None Remove="Pages\SettingsPage.xaml" />
     <None Remove="Pages\TestPage.xaml" />
+    <None Remove="Pages\TestPage2.xaml" />
   </ItemGroup>
+
+	
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.250402" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.250402" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.TabbedCommandBar" Version="8.2.250402" />
+    <PackageReference Include="DevWinUI" Version="9.1.0" />
+    <PackageReference Include="DevWinUI.ContextMenu" Version="9.0.0" />
+    <PackageReference Include="DevWinUI.Controls" Version="9.1.0" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4948" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250907003" />
   </ItemGroup>
@@ -86,7 +90,18 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="DataModel\" />
     <Folder Include="wwwroot\pdfjs\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\TestPage2.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\PPTPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\SettingsPage.xaml">
