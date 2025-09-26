@@ -64,7 +64,12 @@
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE786;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="PPT" Tag="App2.Pages.TestPage2">
+                <NavigationViewItem Content="测试页面2" Tag="App2.Pages.TestPage2">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE756;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="测试页面3" Tag="App2.Pages.TestPage3">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE756;"/>
                     </NavigationViewItem.Icon>

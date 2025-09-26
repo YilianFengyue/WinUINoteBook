@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="App2.Pages.TestPage3"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:App2.Pages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dev="using:DevWinUI"
+    xmlns:media="using:Microsoft.UI.Xaml.Media"
+    mc:Ignorable="d">
+
+    <!-- 添加页面资源 -->
+    <Page.Resources>
+        <ResourceDictionary x:Key="Default">
+            <media:AcrylicBrush x:Key="CustomAcrylicInAppLuminosity"
+                    TintOpacity="0.8" 
+                    TintLuminosityOpacity="0.8" 
+                    TintColor="SkyBlue" 
+                    FallbackColor="SkyBlue" />
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource CardGradient1Brush}">
+        <!-- 使用自定义的AcrylicBrush -->
+        <Rectangle Height="80" 
+                   Width="80"  
+                   Fill="{StaticResource CustomAcrylicInAppLuminosity}" />
+    </Grid>
+</Page>

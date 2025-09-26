@@ -7,9 +7,123 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:dev="using:DevWinUI"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <!-- 图片瀑布流模板 -->
+        <DataTemplate x:Key="ImageStaggeredTemplate" x:DataType="local:ImageItem">
+            <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                  BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  Margin="4">
+
+                <!-- 图片容器 -->
+                <Border CornerRadius="8" 
+                       >
+                    <Grid>
+                        <!-- 图片 -->
+                        <Image Source="{x:Bind ImageUrl}"
+                               Stretch="UniformToFill"
+                               Height="{x:Bind Height}"
+                               HorizontalAlignment="Stretch"
+                               VerticalAlignment="Stretch"/>
+
+                        <!-- 覆盖层信息 -->
+                        <Border Background="#80000000" 
+                                VerticalAlignment="Bottom"
+                                CornerRadius="0,0,8,8">
+                            <StackPanel Margin="8,6">
+                                <TextBlock Text="{x:Bind Title}" 
+                                          Foreground="White"
+                                          FontSize="14" 
+                                          FontWeight="SemiBold"
+                                          TextWrapping="Wrap"/>
+                                <TextBlock Text="{x:Bind Description}" 
+                                          Foreground="#CCFFFFFF"
+                                          FontSize="12" 
+                                          Margin="0,2,0,0"
+                                          TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
     <Grid>
-        
+        <!-- 顶部控制面板 -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 控制面板 -->
+        <StackPanel Orientation="Horizontal" 
+                    Margin="20,10" 
+                    Spacing="15"
+                    Grid.Row="0">
+
+            <TextBlock Text="列宽:" 
+                      VerticalAlignment="Center"/>
+            <Slider x:Name="ColumnWidthSlider"
+                    Minimum="180" 
+                    Maximum="350" 
+                    Value="250"
+                    Width="120"/>
+
+            <TextBlock Text="列间距:" 
+                      VerticalAlignment="Center"/>
+            <Slider x:Name="ColumnSpacingSlider"
+                    Minimum="0" 
+                    Maximum="20" 
+                    Value="8"
+                    Width="100"/>
+
+            <TextBlock Text="行间距:" 
+                      VerticalAlignment="Center"/>
+            <Slider x:Name="RowSpacingSlider"
+                    Minimum="0" 
+                    Maximum="20" 
+                    Value="8"
+                    Width="100"/>
+
+            <Button x:Name="RefreshButton"
+                    Content="刷新图片"
+                    Click="RefreshButton_Click"/>
+        </StackPanel>
+
+        <!-- 瀑布流容器 -->
+        <ScrollViewer Grid.Row="1" 
+                      ZoomMode="Enabled"
+                      HorizontalScrollMode="Disabled"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+
+            <muxc:ItemsRepeater x:Name="ImageRepeater"
+                                ItemTemplate="{StaticResource ImageStaggeredTemplate}"
+                                ItemsSource="{x:Bind ImageCollection, Mode=OneWay}"
+                                Margin="16,8,16,20">
+                <muxc:ItemsRepeater.Layout>
+                    <controls:StaggeredLayout 
+                        DesiredColumnWidth="{x:Bind ColumnWidthSlider.Value, Mode=OneWay}"
+                        ColumnSpacing="{x:Bind ColumnSpacingSlider.Value, Mode=OneWay}"
+                        RowSpacing="{x:Bind RowSpacingSlider.Value, Mode=OneWay}"
+                        ItemsStretch="None" />
+                </muxc:ItemsRepeater.Layout>
+            </muxc:ItemsRepeater>
+        </ScrollViewer>
+
+        <!-- 加载指示器 -->
+        <ProgressRing x:Name="LoadingRing"
+                      Grid.Row="1"
+                      IsActive="False"
+                      Width="50"
+                      Height="50"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"/>
     </Grid>
 </Page>

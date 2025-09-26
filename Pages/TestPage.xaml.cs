@@ -1,9 +1,9 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using System.Collections.Generic;
+using Microsoft.UI.Xaml.Media;
 using System.Collections.ObjectModel;
-using Microsoft.UI.Xaml.Media; // 为 VisualTreeHelper 提供命名空间
+using Windows.Foundation;
 
 namespace App2.Pages
 {
@@ -11,10 +11,10 @@ namespace App2.Pages
     {
         public ObservableCollection<TileItem> Tiles { get; } = new();
 
-        // 全局“间距”与“尺寸”
-        private double _tileGap = 6;
-        // ★新增：拖拽过程里记录源索引
+        private double _tileGap = 6;      // 间距
         private int _dragSourceIndex = -1;
+        private TileItem? _dragItem = null;
+
         public TestPage()
         {
             InitializeComponent();
@@ -26,15 +26,14 @@ namespace App2.Pages
             if (Tiles.Count == 0) ResetSamples();
             ApplyItemSize(SizeSlider.Value);
             ApplyGap(_tileGap);
+            EnsureAllContainerSpans();     // ★初始时就同步一次跨度，避免容器复用造成差异
         }
 
         private void ResetSamples()
         {
             Tiles.Clear();
 
-            // 精选一组彩色样张（picsum 固定 id，稳定且色彩丰富）
-            // 你以后可替换为自己的 CDN / 封面图
-            int[] ids = new int[]
+            int[] ids =
             {
                 1011, 1025, 1031, 1050, 1069, 1074, 1084, 1080, 1081, 1082,
                 1083, 1085, 1089, 109, 110, 111, 112, 113, 114, 115
@@ -46,15 +45,16 @@ namespace App2.Pages
                 {
                     Title = $"笔记 {i + 1}",
                     Subtitle = "双击打开 · 拖拽可排序",
-                    ImageUrl = $"https://picsum.photos/id/{ids[i]}/800/800" // 更高分辨率，显示更清晰
+                    ImageUrl = $"https://picsum.photos/id/{ids[i]}/800/800",
+                    // 演示：前几个给不同尺寸
+                    ColumnSpan = (i == 0) ? 2 : 1,
+                    RowSpan = (i == 0) ? 2 : 1
                 });
             }
         }
 
         private void SizeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            ApplyItemSize(e.NewValue);
-        }
+            => ApplyItemSize(e.NewValue);
 
         private void ApplyItemSize(double size)
         {
@@ -64,128 +64,6 @@ namespace App2.Pages
                 panel.ItemHeight = size;
             }
         }
-        private void ResizeTile_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("🔧 ResizeTile_Click 被调用");
-
-            if (sender is MenuFlyoutItem menuItem)
-            {
-                System.Diagnostics.Debug.WriteLine($"🔧 MenuFlyoutItem Tag: {menuItem.Tag}");
-                System.Diagnostics.Debug.WriteLine($"🔧 MenuFlyoutItem DataContext: {menuItem.DataContext?.GetType().Name}");
-
-                if (menuItem.DataContext is TileItem tileItem && menuItem.Tag is string sizeTag)
-                {
-                    System.Diagnostics.Debug.WriteLine($"🔧 找到 TileItem: {tileItem.Title}");
-                    System.Diagnostics.Debug.WriteLine($"🔧 当前大小: {tileItem.ColumnSpan}x{tileItem.RowSpan}");
-
-                    var sizes = sizeTag.Split(',');
-                    if (sizes.Length == 2 &&
-                        int.TryParse(sizes[0], out int colSpan) &&
-                        int.TryParse(sizes[1], out int rowSpan))
-                    {
-                        System.Diagnostics.Debug.WriteLine($"🔧 准备改变大小到: {colSpan}x{rowSpan}");
-
-                        // 更新磁贴大小
-                        tileItem.ColumnSpan = colSpan;
-                        tileItem.RowSpan = rowSpan;
-
-                        System.Diagnostics.Debug.WriteLine($"🔧 大小已更新到: {tileItem.ColumnSpan}x{tileItem.RowSpan}");
-
-                        // 应用到对应的容器
-                        ApplyTileSize(tileItem);
-
-                        // 额外的布局刷新确保变化立即可见
-                        this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                        {
-                            ForceGridLayoutRefresh();
-                        });
-
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"🔧 ❌ 解析大小失败: {sizeTag}");
-                    }
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"🔧 ❌ DataContext 或 Tag 有问题");
-                }
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine($"🔧 ❌ sender 不是 MenuFlyoutItem: {sender?.GetType().Name}");
-            }
-        }
-
-        private void ApplyTileSize(TileItem tileItem)
-        {
-            int index = Tiles.IndexOf(tileItem);
-            System.Diagnostics.Debug.WriteLine($"🔧 ApplyTileSize - 磁贴索引: {index}");
-
-            if (index >= 0)
-            {
-                var container = TileGrid.ContainerFromIndex(index) as GridViewItem;
-                System.Diagnostics.Debug.WriteLine($"🔧 找到容器: {container != null}");
-
-                if (container != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"🔧 设置容器大小: {tileItem.ColumnSpan}x{tileItem.RowSpan}");
-
-                    VariableSizedWrapGrid.SetRowSpan(container, tileItem.RowSpan);
-                    VariableSizedWrapGrid.SetColumnSpan(container, tileItem.ColumnSpan);
-
-                    // 更强制的布局刷新
-                    if (TileGrid.ItemsPanelRoot is VariableSizedWrapGrid panel)
-                    {
-                        panel.InvalidateMeasure();
-                        panel.InvalidateArrange();
-                        panel.UpdateLayout(); // 关键：强制立即更新布局
-                    }
-
-                    container.InvalidateMeasure();
-                    container.InvalidateArrange();
-                    container.UpdateLayout(); // 关键：强制立即更新容器布局
-
-                    TileGrid.InvalidateMeasure();
-                    TileGrid.InvalidateArrange();
-                    TileGrid.UpdateLayout(); // 关键：强制立即更新GridView布局
-
-                    System.Diagnostics.Debug.WriteLine($"🔧 ✅ 布局已强制刷新");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"🔧 ❌ 容器未找到，尝试延迟应用");
-                    // 使用 DispatcherQueue 确保在UI线程上执行
-                    this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.High, () =>
-                    {
-                        ApplyTileSizeDelayed(tileItem, index);
-                    });
-                }
-            }
-        }
-
-        private void ApplyTileSizeDelayed(TileItem tileItem, int index)
-        {
-            var delayedContainer = TileGrid.ContainerFromIndex(index) as GridViewItem;
-            if (delayedContainer != null)
-            {
-                System.Diagnostics.Debug.WriteLine($"🔧 延迟应用成功");
-                VariableSizedWrapGrid.SetRowSpan(delayedContainer, tileItem.RowSpan);
-                VariableSizedWrapGrid.SetColumnSpan(delayedContainer, tileItem.ColumnSpan);
-
-                // 同样的强制布局更新
-                if (TileGrid.ItemsPanelRoot is VariableSizedWrapGrid panel)
-                {
-                    panel.UpdateLayout();
-                }
-                delayedContainer.UpdateLayout();
-                TileGrid.UpdateLayout();
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine($"🔧 ❌ 延迟应用也失败了");
-            }
-        }
 
         private void GapSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
@@ -193,12 +71,7 @@ namespace App2.Pages
             ApplyGap(_tileGap);
         }
 
-
-
-        /// <summary>
-        /// 按当前“间距滑杆”实时设置每个 GridViewItem 的 Margin。
-        /// 官方样式里 Margin 是 Setter，无法绑定；因此直接在容器上赋值最稳妥。
-        /// </summary>
+        /// <summary>按当前“间距滑杆”设置每个 GridViewItem 的 Margin。</summary>
         private void ApplyGap(double gap)
         {
             if (TileGrid == null) return;
@@ -206,88 +79,87 @@ namespace App2.Pages
             for (int i = 0; i < count; i++)
             {
                 if (TileGrid.ContainerFromIndex(i) is GridViewItem gvi)
-                {
                     gvi.Margin = new Thickness(gap);
-                }
             }
         }
 
-        // 新生成/回收容器时也应用当前间距
+        /// <summary>容器变化时，始终同步跨度（不要限制 Phase）。</summary>
         private void TileGrid_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
-            if (args.ItemContainer is GridViewItem gvi && args.Item is TileItem tileItem)
+            if (args.ItemContainer is GridViewItem gvi && args.Item is TileItem tile)
             {
-                System.Diagnostics.Debug.WriteLine($"🔧 ContainerContentChanging - {tileItem.Title}: {tileItem.ColumnSpan}x{tileItem.RowSpan}");
-
-                // 设置间距
+                // 间距
                 gvi.Margin = new Thickness(_tileGap);
 
-                // 只在容器准备阶段设置大小，避免干扰拖拽
-                if (args.Phase == 0)
+                // ★关键：每次都应用跨度，避免容器复用导致 1x1 回退
+                VariableSizedWrapGrid.SetRowSpan(gvi, tile.RowSpan);
+                VariableSizedWrapGrid.SetColumnSpan(gvi, tile.ColumnSpan);
+            }
+        }
+
+        /// <summary>把当前已实现的容器全部与数据项的 Row/ColSpan 对齐。</summary>
+        private void EnsureAllContainerSpans()
+        {
+            for (int i = 0; i < Tiles.Count; i++)
+            {
+                if (TileGrid.ContainerFromIndex(i) is GridViewItem gvi)
                 {
-                    // 应用磁贴大小
-                    VariableSizedWrapGrid.SetRowSpan(gvi, tileItem.RowSpan);
-                    VariableSizedWrapGrid.SetColumnSpan(gvi, tileItem.ColumnSpan);
-
-                    System.Diagnostics.Debug.WriteLine($"🔧 容器大小已设置: RowSpan={VariableSizedWrapGrid.GetRowSpan(gvi)}, ColumnSpan={VariableSizedWrapGrid.GetColumnSpan(gvi)}");
+                    var t = Tiles[i];
+                    VariableSizedWrapGrid.SetRowSpan(gvi, t.RowSpan);
+                    VariableSizedWrapGrid.SetColumnSpan(gvi, t.ColumnSpan);
                 }
-
-                // 确保拖拽相关属性正确设置
-                gvi.CanDrag = true;
-                gvi.AllowDrop = true;
             }
-        }
 
-        public Visibility ContextualItem { get; } = Visibility.Visible;
-
-        private void ResetButton_Click(object sender, RoutedEventArgs e)
-        {
-            ResetSamples();
-            ApplyGap(_tileGap);
-        }
-
-        /// <summary>
-        /// 强制刷新整个网格布局
-        /// </summary>
-        private void ForceGridLayoutRefresh()
-        {
-            if (TileGrid?.ItemsPanelRoot is VariableSizedWrapGrid panel)
+            if (TileGrid.ItemsPanelRoot is VariableSizedWrapGrid panel)
             {
-                // 临时改变一个无关紧要的属性来触发重新布局
-                var currentOrientation = panel.Orientation;
-                panel.Orientation = currentOrientation == Orientation.Horizontal ? Orientation.Vertical : Orientation.Horizontal;
-                panel.UpdateLayout();
-                panel.Orientation = currentOrientation;
+                panel.InvalidateMeasure();
+                panel.InvalidateArrange();
                 panel.UpdateLayout();
             }
         }
 
-        // ★新增：向上查找最近的 GridViewItem（不用扩展方法）
-        private static GridViewItem FindAncestorGridViewItem(DependencyObject d)
+        // ====== 尺寸右键菜单 ======
+
+        private void ResizeTile_Click(object sender, RoutedEventArgs e)
         {
-            while (d != null && d is not GridViewItem)
+            if (sender is MenuFlyoutItem mi &&
+                mi.DataContext is TileItem tile &&
+                mi.Tag is string s)
             {
-                d = VisualTreeHelper.GetParent(d);
+                var parts = s.Split(',');
+                if (parts.Length == 2 &&
+                    int.TryParse(parts[0], out int c) &&
+                    int.TryParse(parts[1], out int r))
+                {
+                    tile.ColumnSpan = c;
+                    tile.RowSpan = r;
+
+                    // 立刻同步到容器
+                    var idx = Tiles.IndexOf(tile);
+                    if (idx >= 0 && TileGrid.ContainerFromIndex(idx) is GridViewItem gvi)
+                    {
+                        VariableSizedWrapGrid.SetRowSpan(gvi, tile.RowSpan);
+                        VariableSizedWrapGrid.SetColumnSpan(gvi, tile.ColumnSpan);
+                    }
+                    EnsureAllContainerSpans();
+                }
             }
-            return d as GridViewItem;
         }
+
+        // ====== 手写拖放重排 ======
 
         private void TileGrid_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            // 仅支持单个条目拖拽（你也可扩展为多选）
             if (e.Items is { Count: > 0 })
             {
-                var item = e.Items[0] as TileItem;
-                _dragSourceIndex = Tiles.IndexOf(item);
-                // 写入 DataPackage 供 Drop 端备用（可选）
-                e.Data.SetText(_dragSourceIndex.ToString());
+                _dragItem = e.Items[0] as TileItem;
+                _dragSourceIndex = (_dragItem != null) ? Tiles.IndexOf(_dragItem) : -1;
                 e.Data.RequestedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Move;
             }
         }
 
         private void TileGrid_DragOver(object sender, DragEventArgs e)
         {
-            // 告诉系统是 Move 语义，并允许放置
             e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Move;
             e.DragUIOverride.IsCaptionVisible = true;
             e.DragUIOverride.IsContentVisible = true;
@@ -296,50 +168,91 @@ namespace App2.Pages
 
         private void TileGrid_Drop(object sender, DragEventArgs e)
         {
-            // 计算目标索引：通过命中容器确定目标位置
-            if (_dragSourceIndex < 0) return;
+            if (_dragSourceIndex < 0 || _dragItem is null) return;
 
-            int targetIndex = Tiles.Count - 1;
+            // ★关键：根据鼠标位置精确计算插入索引（左半插前，右半插后；未命中容器按行末或最后）
+            int targetIndex = GetTargetInsertIndex(e.GetPosition(TileGrid));
 
-            // 命中检测：找到鼠标下的容器
-            if (e.OriginalSource is FrameworkElement fe)
+            // 若把 A 从前面拖到后面，移除后目标索引会左移 1，需修正
+            if (targetIndex > _dragSourceIndex) targetIndex--;
+
+            // 边界保护
+            if (targetIndex < 0) targetIndex = 0;
+            if (targetIndex > Tiles.Count - 1) targetIndex = Tiles.Count - 1;
+
+            MoveItem(Tiles, _dragSourceIndex, targetIndex);
+
+            _dragSourceIndex = -1;
+            _dragItem = null;
+
+            // 拖拽完成后，确保所有容器的跨度与数据同步，不出现“变小”
+            EnsureAllContainerSpans();
+        }
+
+        /// <summary>
+        /// 计算插入索引：命中某个容器则看左右半（插前/插后）；未命中容器则依据行/末尾推断。
+        /// </summary>
+        private int GetTargetInsertIndex(Point p)
+        {
+            int lastRealized = -1;
+            Rect lastBounds = default;
+
+            for (int i = 0; i < Tiles.Count; i++)
             {
-                // 一路向上找 GridViewItem
-                var container = FindAncestorGridViewItem(fe);
-                if (container != null)
+                if (TileGrid.ContainerFromIndex(i) is GridViewItem gvi)
                 {
-                    int idx = TileGrid.IndexFromContainer(container);
-                    if (idx >= 0) targetIndex = idx;
+                    var bounds = GetBoundsRelativeTo(gvi, TileGrid);
+                    lastRealized = i;
+                    lastBounds = bounds;
+
+                    if (bounds.Contains(p))
+                    {
+                        // 命中该卡片：左半插到它前，右半插到它后
+                        bool insertBefore = p.X < (bounds.Left + bounds.Width / 2);
+                        return insertBefore ? i : i + 1;
+                    }
                 }
             }
 
-            // 源与目标相同则忽略
-            if (targetIndex == _dragSourceIndex) return;
+            // 没命中任何可视容器：若在最后一行右侧，插到最后；若在最后一行左侧，插到最后一行前面
+            if (lastRealized >= 0)
+            {
+                if (p.Y < lastBounds.Top)       // 在第一行上方，插到最前
+                    return 0;
+                return Tiles.Count;             // 其它情况视为插到最后
+            }
 
-            // 安全移动：考虑从前移到后/从后移到前的索引变化
-            MoveItemInObservableCollection(Tiles, _dragSourceIndex, targetIndex);
-
-            // 更新完后，重置状态并刷新当前间距即可
-            _dragSourceIndex = -1;
-            ApplyGap(_tileGap);         // 你的原方法
-            ForceGridLayoutRefresh();   // 你的原方法，确保立刻重排
+            // 没有任何容器（空列表）
+            return 0;
         }
 
-        // ★新增：ObservableCollection 安全移动
-        private static void MoveItemInObservableCollection<T>(ObservableCollection<T> collection, int oldIndex, int newIndex)
+        private static Rect GetBoundsRelativeTo(FrameworkElement child, FrameworkElement root)
+        {
+            var t = child.TransformToVisual(root);
+            return t.TransformBounds(new Rect(0, 0, child.ActualWidth, child.ActualHeight));
+        }
+
+        private static void MoveItem<T>(ObservableCollection<T> coll, int oldIndex, int newIndex)
         {
             if (oldIndex == newIndex) return;
-            if (oldIndex < 0 || oldIndex >= collection.Count) return;
+            if (oldIndex < 0 || oldIndex >= coll.Count) return;
             if (newIndex < 0) newIndex = 0;
-            if (newIndex >= collection.Count) newIndex = collection.Count - 1;
+            if (newIndex > coll.Count) newIndex = coll.Count;
 
-            var item = collection[oldIndex];
-            collection.RemoveAt(oldIndex);
-            collection.Insert(newIndex, item);
+            var item = coll[oldIndex];
+            coll.RemoveAt(oldIndex);
+            // newIndex 是“插入位置”，等价于 Insert(i) 把元素放在 i 之前
+            if (newIndex >= coll.Count) coll.Add(item);
+            else coll.Insert(newIndex, item);
         }
 
-       
-        
+        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            ResetSamples();
+            ApplyItemSize(SizeSlider.Value);
+            ApplyGap(_tileGap);
+            EnsureAllContainerSpans(); // 确保跨度也重置
+        }
     }
 
     public class TileItem : System.ComponentModel.INotifyPropertyChanged
@@ -354,38 +267,19 @@ namespace App2.Pages
         public int RowSpan
         {
             get => _rowSpan;
-            set
-            {
-                if (_rowSpan != value)
-                {
-                    _rowSpan = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(SizeText));
-                }
-            }
+            set { if (_rowSpan != value) { _rowSpan = value; OnPropertyChanged(); OnPropertyChanged(nameof(SizeText)); } }
         }
 
         public int ColumnSpan
         {
             get => _columnSpan;
-            set
-            {
-                if (_columnSpan != value)
-                {
-                    _columnSpan = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(SizeText));
-                }
-            }
+            set { if (_columnSpan != value) { _columnSpan = value; OnPropertyChanged(); OnPropertyChanged(nameof(SizeText)); } }
         }
 
         public string SizeText => $"{ColumnSpan}x{RowSpan}";
 
-        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
-        }
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+        protected virtual void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+            => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
     }
 }

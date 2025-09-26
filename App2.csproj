@@ -51,6 +51,7 @@
     <None Remove="Pages\SettingsPage.xaml" />
     <None Remove="Pages\TestPage.xaml" />
     <None Remove="Pages\TestPage2.xaml" />
+    <None Remove="Pages\TestPage3.xaml" />
   </ItemGroup>
 
 	
@@ -92,6 +93,11 @@
   <ItemGroup>
     <Folder Include="DataModel\" />
     <Folder Include="wwwroot\pdfjs\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\TestPage3.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\TestPage2.xaml">
