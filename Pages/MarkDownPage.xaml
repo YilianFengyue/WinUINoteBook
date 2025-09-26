@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="App2.Pages.MarkDownPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:App2.Pages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 顶部导航栏 -->
+        <Pivot x:Name="TopPivot"
+               Grid.Row="0"
+               Title="TipTap Editor"
+               SelectionChanged="TopPivot_SelectionChanged"
+               Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <PivotItem Header="文件" Tag="file">
+                <Grid/>
+            </PivotItem>
+            <PivotItem Header="编辑" Tag="edit">
+                <Grid/>
+            </PivotItem>
+            <PivotItem Header="格式" Tag="format">
+                <Grid/>
+            </PivotItem>
+            <PivotItem Header="插入" Tag="insert">
+                <Grid/>
+            </PivotItem>
+            <PivotItem Header="视图" Tag="view">
+                <Grid/>
+            </PivotItem>
+            <PivotItem Header="工具" Tag="tools">
+                <Grid/>
+            </PivotItem>
+        </Pivot>
+
+        <!-- 主内容区域 -->
+        <Grid Grid.Row="1">
+
+            <!-- 动态工具栏容器 -->
+            <Border HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="2"
+                    Padding="20,10"
+                    Margin="0,40,0,0"
+                    Canvas.ZIndex="200">
+
+                <Grid x:Name="ToolbarContainer">
+
+                    <!-- 文件工具栏 -->
+                    <StackPanel x:Name="FileToolbar" Orientation="Horizontal" Spacing="6" Visibility="Visible">
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="新建文档" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE710;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="打开文档" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8E5;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="保存" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE74E;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="另存为" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE792;" FontSize="14"/>
+                        </Button>
+
+                        <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
+
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="导出PDF" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xEA90;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="打印" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE2F6;" FontSize="14"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- 编辑工具栏 -->
+                    <StackPanel x:Name="EditToolbar" Orientation="Horizontal" Spacing="6" Visibility="Collapsed">
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="撤销" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE7A7;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="重做" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE7A6;" FontSize="14"/>
+                        </Button>
+
+                        <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
+
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="剪切" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8C6;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="复制" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8C8;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="粘贴" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE77F;" FontSize="14"/>
+                        </Button>
+
+                        <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
+
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="查找" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE721;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="替换" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8AC;" FontSize="14"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- 格式工具栏 -->
+                    <StackPanel x:Name="FormatToolbar" Orientation="Horizontal" Spacing="6" Visibility="Collapsed">
+                        <ComboBox Width="100" Height="32" PlaceholderText="标题"
+                                  ToolTipService.ToolTip="标题级别">
+                            <ComboBoxItem Content="正文"/>
+                            <ComboBoxItem Content="标题 1"/>
+                            <ComboBoxItem Content="标题 2"/>
+                            <ComboBoxItem Content="标题 3"/>
+                            <ComboBoxItem Content="标题 4"/>
+                            <ComboBoxItem Content="标题 5"/>
+                            <ComboBoxItem Content="标题 6"/>
+                        </ComboBox>
+
+                        <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
+
+                        <ToggleButton Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                      ToolTipService.ToolTip="粗体" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8DD;" FontSize="14"/>
+                        </ToggleButton>
+                        <ToggleButton Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                      ToolTipService.ToolTip="斜体" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8DB;" FontSize="14"/>
+                        </ToggleButton>
+                        <ToggleButton Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                      ToolTipService.ToolTip="下划线" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8DC;" FontSize="14"/>
+                        </ToggleButton>
+                        <ToggleButton Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                      ToolTipService.ToolTip="删除线" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xEDE0;" FontSize="14"/>
+                        </ToggleButton>
+
+                        <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
+
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="高亮" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE7E6;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="文字颜色" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE790;" FontSize="14"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- 插入工具栏 -->
+                    <StackPanel x:Name="InsertToolbar" Orientation="Horizontal" Spacing="6" Visibility="Collapsed">
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="插入链接" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71B;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="插入图片" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8B9;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="插入表格" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8EC;" FontSize="14"/>
+                        </Button>
+
+                        <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
+
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="代码块" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE943;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="引用块" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8FD;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="分割线" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE91C;" FontSize="14"/>
+                        </Button>
+
+                        <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
+
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="无序列表" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8FD;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="有序列表" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8FD;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="任务列表" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8A5;" FontSize="14"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- 视图工具栏 -->
+                    <StackPanel x:Name="ViewToolbar" Orientation="Horizontal" Spacing="6" Visibility="Collapsed">
+                        <ToggleButton Width="80" Height="36" Background="Transparent" BorderThickness="0"
+                                      ToolTipService.ToolTip="编辑模式" CornerRadius="2" Content="编辑" FontSize="12"/>
+                        <ToggleButton Width="80" Height="36" Background="Transparent" BorderThickness="0"
+                                      ToolTipService.ToolTip="预览模式" CornerRadius="2" Content="预览" FontSize="12"/>
+                        <ToggleButton Width="80" Height="36" Background="Transparent" BorderThickness="0"
+                                      ToolTipService.ToolTip="分屏模式" CornerRadius="2" Content="分屏" FontSize="12"/>
+
+                        <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
+
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="全屏" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE740;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="专注模式" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE7B3;" FontSize="14"/>
+                        </Button>
+
+                        <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
+
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="放大" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8A3;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="缩小" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71E;" FontSize="14"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- 工具栏 -->
+                    <StackPanel x:Name="ToolsToolbar" Orientation="Horizontal" Spacing="6" Visibility="Collapsed">
+                        <Button Width="80" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="字数统计" CornerRadius="2" Content="字数" FontSize="12"/>
+                        <Button Width="80" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="拼写检查" CornerRadius="2" Content="拼写" FontSize="12"/>
+
+                        <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
+
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="大纲" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE8FD;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="文档信息" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE946;" FontSize="14"/>
+                        </Button>
+
+                        <Rectangle Width="1" Height="24" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="8,0"/>
+
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="插件管理" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE977;" FontSize="14"/>
+                        </Button>
+                        <Button Width="36" Height="36" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="设置" CornerRadius="2">
+                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE713;" FontSize="14"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+            </Border>
+
+            <!-- 编辑器容器 -->
+            <ScrollView HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        HorizontalScrollMode="Auto"
+                        VerticalScrollMode="Auto"
+                        ZoomMode="Disabled"
+                        Margin="40,30,40,40">
+
+                <Border Background="White"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="2"
+                        MinHeight="1000"
+                        MinWidth="600"
+                        HorizontalAlignment="Stretch"
+                        Padding="40">
+
+                    <!-- 编辑器占位区域 -->
+                    <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            MinHeight="800">
+                        <StackPanel HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Spacing="12">
+                            <FontIcon FontFamily="Segoe Fluent Icons" 
+                                      Glyph="&#xE8A5;" 
+                                      FontSize="48"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="TipTap 编辑器区域"
+                                       HorizontalAlignment="Center"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       FontSize="16"/>
+                            <TextBlock Text="在这里集成您的富文本编辑器"
+                                       HorizontalAlignment="Center"
+                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                       FontSize="12"/>
+                        </StackPanel>
+                    </Border>
+
+                </Border>
+            </ScrollView>
+
+            <!-- 状态栏 -->
+            <Border HorizontalAlignment="Stretch"
+                    VerticalAlignment="Bottom"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="0,1,0,0"
+                    Padding="20,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <TextBlock Text="字数: 0" 
+                                   FontSize="12" 
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="行: 1 列: 1" 
+                                   FontSize="12" 
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="已保存" 
+                                   FontSize="12" 
+                                   Foreground="{ThemeResource SystemFillColorSuccessBrush}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                        <TextBlock Text="Markdown" 
+                                   FontSize="12" 
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="UTF-8" 
+                                   FontSize="12" 
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 悬浮操作按钮 -->
+            <Button Width="56" Height="56"
+                    CornerRadius="28"
+                    Background="{ThemeResource AccentFillColorDefaultBrush}"
+                    BorderThickness="0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="40,40,40,80"
+                    ToolTipService.ToolTip="快速插入">
+                <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE710;" FontSize="20" Foreground="White"/>
+            </Button>
+        </Grid>
+    </Grid>
+</Page>

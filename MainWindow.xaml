@@ -74,6 +74,11 @@
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE756;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem Content="MarkDown" Tag="App2.Pages.MarkDownPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE70B;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
 
             <!-- 底部菜单项 -->

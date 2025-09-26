@@ -45,6 +45,7 @@
   <ItemGroup>
     <None Remove="Pages\BrowserPage.xaml" />
     <None Remove="Pages\DrawingPage.xaml" />
+    <None Remove="Pages\MarkDownPage.xaml" />
     <None Remove="Pages\NotePage.xaml" />
     <None Remove="Pages\PdfViewerPage.xaml" />
     <None Remove="Pages\PPTPage.xaml" />
@@ -93,6 +94,11 @@
   <ItemGroup>
     <Folder Include="DataModel\" />
     <Folder Include="wwwroot\pdfjs\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\MarkDownPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\TestPage3.xaml">
