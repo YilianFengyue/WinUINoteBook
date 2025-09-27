@@ -16,15 +16,15 @@ namespace App2.Pages
 
         private void InitializeToolbars()
         {
-            // 创建工具栏映射
+            // 创建新的工具栏映射 - 4个合并后的工具栏
             _toolbars = new Dictionary<string, FrameworkElement>
             {
-                { "file", FileToolbar },
-                { "edit", EditToolbar },
-                { "format", FormatToolbar },
-                { "insert", InsertToolbar },
-                { "view", ViewToolbar },
-                { "tools", ToolsToolbar }
+                { "file", FileEditToolbar },      // 文件+编辑
+                { "edit", FileEditToolbar },      // 同样映射到文件+编辑
+                { "format", FormatStyleToolbar }, // 格式+样式
+                { "insert", InsertMediaToolbar }, // 插入+媒体
+                { "view", ViewToolsToolbar },     // 视图+工具
+                { "tools", ViewToolsToolbar }     // 同样映射到视图+工具
             };
         }
 
@@ -40,10 +40,10 @@ namespace App2.Pages
         private void SwitchToolbar(string activeTag)
         {
             // 隐藏所有工具栏
-            foreach (var toolbar in _toolbars.Values)
-            {
-                toolbar.Visibility = Visibility.Collapsed;
-            }
+            FileEditToolbar.Visibility = Visibility.Collapsed;
+            FormatStyleToolbar.Visibility = Visibility.Collapsed;
+            InsertMediaToolbar.Visibility = Visibility.Collapsed;
+            ViewToolsToolbar.Visibility = Visibility.Collapsed;
 
             // 显示选中的工具栏
             if (!string.IsNullOrEmpty(activeTag) && _toolbars.ContainsKey(activeTag))
