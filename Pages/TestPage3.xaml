@@ -22,9 +22,6 @@
     </Page.Resources>
 
     <Grid Background="{ThemeResource CardGradient1Brush}">
-        <!-- 使用自定义的AcrylicBrush -->
-        <Rectangle Height="80" 
-                   Width="80"  
-                   Fill="{StaticResource CustomAcrylicInAppLuminosity}" />
+        
     </Grid>
 </Page>
