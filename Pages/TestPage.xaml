@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="App2.Pages.TestPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,52 +8,140 @@
     xmlns:sys="using:System"
     mc:Ignorable="d">
 
+    <!-- ★替换整段：<Page.Resources> ... </Page.Resources> -->
     <Page.Resources>
-        <!-- �ı�ɫ -->
+        <!-- 标题/副标题颜色（保留你的键名） -->
         <SolidColorBrush x:Key="TileTitleBrush" Color="White"/>
         <SolidColorBrush x:Key="TileSubtitleBrush" Color="#E6FFFFFF"/>
 
-        <!-- �ײ����䣨��ѹ�ײ��������� -->
+        <!-- 底部渐变（保留你的键名） -->
         <LinearGradientBrush x:Key="BottomFadeBrush" StartPoint="0,0" EndPoint="0,1">
             <GradientStop Color="#00FFFFFF" Offset="0"/>
             <GradientStop Color="#33000000" Offset="0.2"/>
             <GradientStop Color="#99000000" Offset="1"/>
         </LinearGradientBrush>
 
-        <!-- ����ģ�� -->
-        <DataTemplate x:Key="TileTemplate" x:DataType="local:TileItem">
+        <!-- ① 图片卡模板（原 TileTemplate → 改名 ImageTileTemplate） -->
+        <DataTemplate x:Key="ImageTileTemplate" x:DataType="local:TileItem">
             <Border CornerRadius="8"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <Border.ContextFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem Text="Small (1x1)"  Click="ResizeTile_Click" Tag="1,1"/>
                         <MenuFlyoutItem Text="Medium (2x1)" Click="ResizeTile_Click" Tag="2,1"/>
                         <MenuFlyoutItem Text="Super (2x2)"  Click="ResizeTile_Click" Tag="2,2"/>
+                        <MenuFlyoutSeparator/>
+                        <!-- ★新增：删除 -->
+                        <MenuFlyoutItem Text="删除此卡片" Click="DeleteTile_Click"/>
                     </MenuFlyout>
                 </Border.ContextFlyout>
 
                 <Grid>
-                    <Image Source="{x:Bind ImageUrl}" Stretch="UniformToFill"/>
-                    <Rectangle Fill="{StaticResource BottomFadeBrush}"
-                               VerticalAlignment="Bottom" Height="72"/>
+                    <!-- 优先本地路径，其次远程 Url -->
+                    <Image Source="{x:Bind ImageSourceResolved}" Stretch="UniformToFill"/>
+                    <Rectangle Fill="{StaticResource BottomFadeBrush}" VerticalAlignment="Bottom" Height="72"/>
                     <StackPanel VerticalAlignment="Bottom" Padding="10" Spacing="2">
                         <TextBlock Text="{x:Bind Title}" FontWeight="SemiBold" FontSize="14"
-                                   Foreground="{StaticResource TileTitleBrush}" TextTrimming="CharacterEllipsis"/>
+                               Foreground="{StaticResource TileTitleBrush}" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Text="{x:Bind Subtitle}" FontSize="12"
-                                   Foreground="{StaticResource TileSubtitleBrush}" TextTrimming="CharacterEllipsis"/>
+                               Foreground="{StaticResource TileSubtitleBrush}" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Text="{x:Bind SizeText, Mode=OneWay}" FontSize="10"
-                                   Foreground="#80FFFFFF" HorizontalAlignment="Right"/>
+                               Foreground="#80FFFFFF" HorizontalAlignment="Right"/>
                     </StackPanel>
                 </Grid>
             </Border>
         </DataTemplate>
+
+        <!-- ② 薄亚克力笔记卡模板（官方 AcrylicBrush） -->
+        <DataTemplate x:Key="NoteTileTemplate" x:DataType="local:TileItem">
+            <Border CornerRadius="12" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <Border.Background>
+                    <!-- ★官方 in-app Acrylic：Tint+Luminosity+Fallback -->
+                    <AcrylicBrush
+                        TintColor="#F2FFFFFF"
+                        TintOpacity="0.55"
+                        TintLuminosityOpacity="0.85"
+                        FallbackColor="#FFFFFFFF"/>
+                </Border.Background>
+                <Border.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Small (1x1)"  Click="ResizeTile_Click" Tag="1,1"/>
+                        <MenuFlyoutItem Text="Medium (2x1)" Click="ResizeTile_Click" Tag="2,1"/>
+                        <MenuFlyoutItem Text="Super (2x2)"  Click="ResizeTile_Click" Tag="2,2"/>
+                        <MenuFlyoutSeparator/>
+                        <!-- ★新增：删除 -->
+                        <MenuFlyoutItem Text="删除此卡片" Click="DeleteTile_Click"/>
+                    </MenuFlyout>
+                </Border.ContextFlyout>
+
+                <Grid Padding="10">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{x:Bind Title}" FontWeight="SemiBold" FontSize="14" Foreground="Black"/>
+                        <TextBlock Text="{x:Bind Subtitle}" FontSize="12" Foreground="#99000000"/>
+                        <!-- 展示前几行内容 -->
+                        <TextBlock Text="{x:Bind NoteText, Mode=OneWay}" FontSize="12" Foreground="#CC000000"
+                            TextWrapping="Wrap" MaxLines="5"/>
+                        <TextBlock Text="{x:Bind SizeText}" FontSize="10" Foreground="#66000000" 
+                               HorizontalAlignment="Right"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- ③ 文件卡模板（PDF/Markdown/PPT 通用） -->
+        <DataTemplate x:Key="FileTileTemplate" x:DataType="local:TileItem">
+            <Border CornerRadius="10"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <Border.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Small (1x1)"  Click="ResizeTile_Click" Tag="1,1"/>
+                        <MenuFlyoutItem Text="Medium (2x1)" Click="ResizeTile_Click" Tag="2,1"/>
+                        <MenuFlyoutItem Text="Super (2x2)"  Click="ResizeTile_Click" Tag="2,2"/>
+                        <MenuFlyoutSeparator/>
+                        <!-- ★新增：系统打开 / 设置路径 / 删除 -->
+                        <MenuFlyoutItem Text="使用系统打开" Click="UseSystemOpen_Click"/>
+                        <MenuFlyoutItem Text="设置文件路径..." Click="SetFilePath_Click"/>
+                        <MenuFlyoutItem Text="删除此卡片" Click="DeleteTile_Click"/>
+                    </MenuFlyout>
+                </Border.ContextFlyout>
+
+                <Grid Padding="10">
+                    <Grid RowDefinitions="Auto,*">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <!-- 简单用 FontIcon 区分类型 -->
+                            <FontIcon Glyph="&#xE8A5;" FontSize="18"/>
+                            <!-- 文档图标 -->
+                            <TextBlock Text="{x:Bind Title}" FontWeight="SemiBold" FontSize="14"
+                                   TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Spacing="4">
+                            <TextBlock Text="{x:Bind Subtitle}" FontSize="12" Foreground="#99000000" 
+                                   TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{x:Bind FilePath}" FontSize="10" Foreground="#66000000" 
+                                   TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{x:Bind SizeText}" FontSize="10" Foreground="#66000000" 
+                                   HorizontalAlignment="Right"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- ④ 模板选择器（UI/TileTemplateSelector.cs） -->
+        <ui:TileTemplateSelector x:Key="TileSelector"
+                             xmlns:ui="using:App2.UI"
+                             ImageTemplate="{StaticResource ImageTileTemplate}"
+                             NoteTemplate="{StaticResource NoteTileTemplate}"
+                             FileTemplate="{StaticResource FileTileTemplate}"/>
     </Page.Resources>
 
     <Grid RowDefinitions="Auto,*">
 
-        <!-- �������ߴ�/��� -->
+        <!-- �������ߴ�/��� -->
         <CommandBar Grid.Row="0" DefaultLabelPosition="Right" Margin="0,30,0,0">
             <AppBarElementContainer>
                 <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
@@ -71,6 +159,20 @@
                 </StackPanel>
             </AppBarElementContainer>
 
+            <!-- ★新增：添加卡片（StoragePicker） -->
+            <AppBarButton Label="添加卡片">
+                <AppBarButton.Icon>
+                    <SymbolIcon Symbol="Add"/>
+                </AppBarButton.Icon>
+                <AppBarButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="文件卡（PDF / Markdown）..." Click="AddFileTile_Click"/>
+                        <MenuFlyoutItem Text="图片卡..." Click="AddImageTile_Click"/>
+                        <MenuFlyoutItem Text="笔记卡" Click="AddNoteTile_Click"/>
+                    </MenuFlyout>
+                </AppBarButton.Flyout>
+            </AppBarButton>
+
             <AppBarButton Label="Reset" Click="ResetButton_Click">
                 <AppBarButton.Icon>
                     <SymbolIcon Symbol="Refresh"/>
@@ -78,37 +180,42 @@
             </AppBarButton>
         </CommandBar>
 
-        <!-- ����������д���� + �ɱ��� -->
+        <!-- ★修改 GridView 关键属性：启用点击 + 模板选择器 -->
         <GridView x:Name="TileGrid"
-                  Grid.Row="1"
-                  Padding="12,8,12,16"
-                  ItemsSource="{x:Bind Tiles, Mode=OneWay}"
-                  ItemTemplate="{StaticResource TileTemplate}"
-                  SelectionMode="None"
+          Grid.Row="1"
+          Padding="12,8,12,16"
+          ItemsSource="{x:Bind Tiles, Mode=OneWay}"
+          ItemTemplateSelector="{StaticResource TileSelector}"
+          SelectionMode="None"
 
-                  CanReorderItems="False"    
-            CanDragItems="True"
-                  AllowDrop="True"
+          CanReorderItems="False"
+          CanDragItems="True"
+          AllowDrop="True"
 
-                  DragItemsStarting="TileGrid_DragItemsStarting"
-                  DragOver="TileGrid_DragOver"
-                  Drop="TileGrid_Drop"
+          DragItemsStarting="TileGrid_DragItemsStarting"
+          DragOver="TileGrid_DragOver"
+          Drop="TileGrid_Drop"
 
-                  IsItemClickEnabled="False"
-                  IsSwipeEnabled="True"
-                  ContainerContentChanging="TileGrid_ContainerContentChanging">
+          IsItemClickEnabled="True"
+          ItemClick="TileGrid_ItemClick"
+          IsSwipeEnabled="True"
+          ContainerContentChanging="TileGrid_ContainerContentChanging">
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <VariableSizedWrapGrid Orientation="Horizontal" ItemHeight="180" ItemWidth="180"/>
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>
 
-            <!-- Բ�ǵȻ�����ʽ -->
+
             <GridView.ItemContainerStyle>
                 <Style TargetType="GridViewItem">
                     <Setter Property="CornerRadius" Value="8"/>
                     <Setter Property="Background" Value="Transparent"/>
                     <Setter Property="UseSystemFocusVisuals" Value="True"/>
+                    <!-- ★新增：让模板内容占满容器 -->
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                    <Setter Property="Padding" Value="0"/>
                 </Style>
             </GridView.ItemContainerStyle>
         </GridView>

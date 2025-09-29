@@ -64,16 +64,26 @@ namespace App2.Pages
         {
             try
             {
-                var messageJson = e.TryGetWebMessageAsString();
-                var message = JsonSerializer.Deserialize<EditorMessage>(messageJson);
+                // 关键：无论网页发的是对象还是字符串，这里都拿 JSON 字符串
+                var json = e.WebMessageAsJson;
+
+                var message = JsonSerializer.Deserialize<EditorMessage>(
+                    json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true } // 小写字段也能匹配
+                );
+
+                if (message == null)
+                {
+                    Debug.WriteLine("收到空消息或反序列化失败");
+                    return;
+                }
 
                 Debug.WriteLine($"收到消息: {message.Type} - {message.Event}");
-
                 HandleEditorMessage(message);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"处理消息失败: {ex.Message}");
+                Debug.WriteLine($"处理消息失败: {ex}");
             }
         }
 
@@ -189,7 +199,7 @@ namespace App2.Pages
             try
             {
                 // 使用 PostWebMessageAsString 而不是 PostWebMessageAsJsonAsync
-                EditorWebView.CoreWebView2.PostWebMessageAsString(json);
+                EditorWebView.CoreWebView2.PostWebMessageAsJson(json);
                 Debug.WriteLine($"发送命令: {command}");
             }
             catch (Exception ex)

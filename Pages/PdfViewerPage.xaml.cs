@@ -8,7 +8,10 @@ using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 using Windows.Storage.Streams;  // IRandomAccessStream / InMemoryRandomAccessStream
-using WinRT;                    // Stream.AsInputStream() / AsRandomAccessStream()
+using WinRT;
+// Stream.AsInputStream() / AsRandomAccessStream()
+
+using App2.Models;   // OpenArgs / FileKind
 namespace App2.Pages
 {
     public sealed partial class PdfViewerPage : Page
@@ -17,7 +20,8 @@ namespace App2.Pages
         private string? _pickedFolder;         // 映射的 PDF 所在目录（本次会话）
         private string? _currentPdfName;       // 当前打开的文件名（不含路径）
         private bool _viewerReady;             // pdf.js viewer 是否已初始化
-        
+
+        private bool _hasNavigatedFile;
         // pdf.js 静态资源根目录：AppBase\wwwroot\pdfjs
         private static string WebRoot =>
             Path.Combine(AppContext.BaseDirectory, "wwwroot");
@@ -27,40 +31,27 @@ namespace App2.Pages
         {
             InitializeComponent();
             Loaded += PdfViewerPage_Loaded;
+            // ★新增：提前订阅，避免在 Loaded 之前首帧导航丢失回调
+            // Viewer.NavigationCompleted += Viewer_NavigationCompleted;
         }
 
         private async void PdfViewerPage_Loaded(object sender, RoutedEventArgs e)
         {
             await Viewer.EnsureCoreWebView2Async();
 
-            // ★新增【网络调试日志】——同步属性，不要 await
+            // 网络调试日志（保留）
             Viewer.CoreWebView2.WebResourceResponseReceived += (s, ev) =>
             {
                 try
                 {
                     var req = ev.Request;
                     var resp = ev.Response;
-                    System.Diagnostics.Debug.WriteLine(
-                        $"[NET] {req.Method} {resp.StatusCode} {req.Uri}");
+                    System.Diagnostics.Debug.WriteLine($"[NET] {req.Method} {resp.StatusCode} {req.Uri}");
                 }
                 catch { }
             };
-            //// ★可选【兜底】：禁用 WebView2 默认下载气泡（已隐藏下载按钮，正常不会触发，此处防误触）
-            //Viewer.CoreWebView2.DownloadStarting += (s, ev) =>
-            //{
-            //    try
-            //    {
-            //        ev.Handled = true; // 屏蔽系统下载弹窗；如需自定义保存逻辑，可在这里处理
-            //    }
-            //    catch { }
-            //};
 
-            // ★删除：跨域拦截不再需要（我们改为同源方案）
-            // Viewer.CoreWebView2.AddWebResourceRequestedFilter(
-            //     "https://picked.local/*", CoreWebView2WebResourceContext.All);
-            // Viewer.CoreWebView2.WebResourceRequested += CoreWebView2_WebResourceRequested;
-
-            // 映射静态资源主机名 appassets.local -> wwwroot
+            // ★改：确保虚拟主机映射（即使多次设置也安全）
             if (Directory.Exists(WebRoot))
             {
                 Viewer.CoreWebView2.SetVirtualHostNameToFolderMapping(
@@ -69,27 +60,102 @@ namespace App2.Pages
                     CoreWebView2HostResourceAccessKind.Allow);
             }
 
-            // ★新增：确保同源缓存目录存在（wwwroot/picked_cache）
+            // 同源缓存目录确保存在
             Directory.CreateDirectory(PickedCacheDir);
 
             // WebView2 基本设置
             Viewer.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
             Viewer.CoreWebView2.Settings.IsZoomControlEnabled = false;
 
-            Viewer.NavigationCompleted += Viewer_NavigationCompleted;
+            // !!! 原来这里有一行：
+            // Viewer.NavigationCompleted += Viewer_NavigationCompleted;
+            // ★删掉↑这行（构造函数里已提前订阅，避免重复）
 
-            // 先加载空 viewer（不带 file），验证静态资源 OK
-            Viewer.Source = new Uri("https://appassets.local/pdfjs/web/viewer.html");
-        }
-
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
-            if (e.Parameter is Window owner)
+            // !!! 原来这里无条件覆盖 Source：
+            // Viewer.Source = new Uri("https://appassets.local/pdfjs/web/viewer.html");
+            // ★改：只有在没有通过参数导航文件时才加载空 viewer
+            if (!_hasNavigatedFile)
             {
-                _ownerHwnd = WindowNative.GetWindowHandle(owner);
+                //Viewer.Source = new Uri("https://appassets.local/pdfjs/web/viewer.html");
+                Viewer.Source = new Uri("https://appassets.local/pdfjs/web/viewer.html");
             }
         }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            // WinUI 3：确保我们拿到宿主窗口句柄（FilePicker/Print 等都会用到）
+            EnsureOwnerHwnd();
+
+            if (e.Parameter is OpenArgs args &&
+                args.FileKind == FileKind.Pdf &&
+                !string.IsNullOrWhiteSpace(args.LocalPath))
+            {
+                try
+                {
+                    await OpenPdfFromPathAsync(args.LocalPath!);
+                }
+                catch (Exception ex)
+                {
+                    var dlg = new ContentDialog
+                    {
+                        XamlRoot = this.Content.XamlRoot,
+                        Title = "打开 PDF 失败",
+                        Content = ex.Message,
+                        PrimaryButtonText = "确定"
+                    };
+                    await dlg.ShowAsync();
+                }
+            }
+        }
+
+        // ★新增：从本地路径打开（复制到 wwwroot/picked_cache → viewer?file=...）
+        private async Task OpenPdfFromPathAsync(string fullPath)
+        {
+            await Viewer.EnsureCoreWebView2Async();
+
+            // ★补：提前确保映射（OnNavigatedTo 早于 Loaded 时也生效）
+            if (Directory.Exists(WebRoot))
+            {
+                Viewer.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                    "appassets.local",
+                    WebRoot,
+                    CoreWebView2HostResourceAccessKind.Allow);
+            }
+
+            Directory.CreateDirectory(PickedCacheDir);
+
+            var safeName = Path.GetFileName(fullPath);
+            var targetPath = Path.Combine(PickedCacheDir, safeName);
+
+            try
+            {
+                File.Copy(fullPath, targetPath, overwrite: true);
+            }
+            catch (IOException)
+            {
+                var name = Path.GetFileNameWithoutExtension(safeName);
+                var ext = Path.GetExtension(safeName);
+                var alt = $"{name}_{DateTime.Now:yyyyMMddHHmmss}{ext}";
+                targetPath = Path.Combine(PickedCacheDir, alt);
+                File.Copy(fullPath, targetPath, overwrite: true);
+                safeName = Path.GetFileName(targetPath);
+            }
+
+            var fileUrl = $"https://appassets.local/picked_cache/{Uri.EscapeDataString(safeName)}";
+            var viewerUrl = $"https://appassets.local/pdfjs/web/viewer.html?file={Uri.EscapeDataString(fileUrl)}";
+
+            _pickedFolder = PickedCacheDir;
+            _currentPdfName = safeName;
+
+            // ★关键：标记“已通过文件导航”，避免 Loaded 里覆盖 Source
+            _hasNavigatedFile = true;
+
+            Viewer.Source = new Uri(viewerUrl);
+            // 随后 NavigationCompleted → EnsureViewerReadyAsync + InjectViewerChromeHiderAsync 会自动跑
+        }
+
 
         // 作用：每次加载/刷新 viewer.html 后，先做 ready 轮询，再注入隐藏样式。
         private void Viewer_NavigationCompleted(
@@ -108,6 +174,8 @@ namespace App2.Pages
         private async void OpenPdf_Click(object sender, RoutedEventArgs e)
         {
             var picker = new FileOpenPicker();
+            // ★关键：WinUI 3 桌面必须先绑定窗口句柄
+            EnsureOwnerHwnd();
             if (_ownerHwnd != IntPtr.Zero)
                 InitializeWithWindow.Initialize(picker, _ownerHwnd);
 
@@ -353,10 +421,10 @@ namespace App2.Pages
         }
         // ★新增函数：向 pdf.js 页面注入 CSS，隐藏其自带的工具栏/侧栏/按钮，并消除顶部空白。
         // 原理：viewer.html 使用 --toolbar-height 控制内容顶距；把它设为 0，同时隐藏相关容器。
-            private async Task InjectViewerChromeHiderAsync()
-            {
-                // 这段 CSS 只做显示层面的隐藏，不改 pdf.js 逻辑。升级 pdf.js 基本不受影响。
-                var css = @"
+        private async Task InjectViewerChromeHiderAsync()
+        {
+            // 这段 CSS 只做显示层面的隐藏，不改 pdf.js 逻辑。升级 pdf.js 基本不受影响。
+            var css = @"
             :root { --toolbar-height: 0px !important; }
 
             /* 顶部工具栏、二级工具栏、查找栏、侧边栏切换按钮等统统隐藏 */
@@ -376,8 +444,8 @@ namespace App2.Pages
             #sidebarContainer { top: 0 !important; }
             ";
 
-                // 把 CSS 以 <style> 注入页面
-                var script = $@"(function(){{
+            // 把 CSS 以 <style> 注入页面
+            var script = $@"(function(){{
             try {{
                 if (!document.querySelector('style[data-winui-hidechrome]')) {{
                     const s = document.createElement('style');
@@ -389,9 +457,9 @@ namespace App2.Pages
             }}
         }})();";
 
-                // 如果 Core 尚未建立，这里会抛；外层调用前已有 EnsureCoreWebView2Async。
-                await Viewer.CoreWebView2.ExecuteScriptAsync(script);
-            }
+            // 如果 Core 尚未建立，这里会抛；外层调用前已有 EnsureCoreWebView2Async。
+            await Viewer.CoreWebView2.ExecuteScriptAsync(script);
+        }
 
         // 辅助子流：只暴露 length 个字节给 206 响应
         private sealed class SubStream : Stream
