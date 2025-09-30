@@ -6,22 +6,296 @@
     xmlns:local="using:App2.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:dev="using:DevWinUI"
-    xmlns:media="using:Microsoft.UI.Xaml.Media"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <!-- 添加页面资源 -->
     <Page.Resources>
-        <ResourceDictionary x:Key="Default">
-            <media:AcrylicBrush x:Key="CustomAcrylicInAppLuminosity"
-                    TintOpacity="0.8" 
-                    TintLuminosityOpacity="0.8" 
-                    TintColor="SkyBlue" 
-                    FallbackColor="SkyBlue" />
-        </ResourceDictionary>
+        <!-- 小磁贴模板 (1x1) -->
+        <DataTemplate x:Key="SmallTileTemplate" x:DataType="local:DashboardTile">
+            <Grid CornerRadius="4" 
+                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                  BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                  BorderThickness="1">
+                <Grid.BackgroundTransition>
+                    <BrushTransition Duration="0:0:0.2" />
+                </Grid.BackgroundTransition>
+
+                <!-- 亚克力背景层 -->
+                <Grid>
+                    <Grid.Background>
+                        <AcrylicBrush TintColor="{x:Bind TileColor, Mode=OneWay}" 
+                                      TintOpacity="0.7"
+                                      TintLuminosityOpacity="0.85"
+                                      FallbackColor="{x:Bind TileColor, Mode=OneWay}"/>
+                    </Grid.Background>
+                </Grid>
+
+                <!-- 图片背景（如果有） -->
+                <Grid x:Name="ImageLayer" x:Load="{x:Bind HasImage, Mode=OneWay}">
+                    <Image Source="{x:Bind ImageUrl, Mode=OneWay}" 
+                           Stretch="UniformToFill"
+                           Opacity="0.3"/>
+                    <Grid Background="#40000000"/>
+                </Grid>
+
+                <!-- 内容 -->
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 图标 -->
+                    <Viewbox Grid.Row="0" 
+                             Width="48" Height="48"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center">
+                        <FontIcon Glyph="{x:Bind IconGlyph, Mode=OneWay}" 
+                                  Foreground="White"/>
+                    </Viewbox>
+
+                    <!-- 标题 -->
+                    <TextBlock Grid.Row="1" 
+                               Text="{x:Bind Title, Mode=OneWay}"
+                               Foreground="White"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               MaxLines="2"/>
+                </Grid>
+
+                <!-- 悬停效果 -->
+                <Grid.Shadow>
+                    <ThemeShadow />
+                </Grid.Shadow>
+            </Grid>
+        </DataTemplate>
+
+        <!-- 中等磁贴模板 (2x2) -->
+        <DataTemplate x:Key="MediumTileTemplate" x:DataType="local:DashboardTile">
+            <Grid CornerRadius="4"
+                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                  BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                  BorderThickness="1">
+                <Grid.BackgroundTransition>
+                    <BrushTransition Duration="0:0:0.2" />
+                </Grid.BackgroundTransition>
+
+                <!-- 亚克力背景 -->
+                <Grid>
+                    <Grid.Background>
+                        <AcrylicBrush TintColor="{x:Bind TileColor, Mode=OneWay}" 
+                                      TintOpacity="0.65"
+                                      TintLuminosityOpacity="0.85"
+                                      FallbackColor="{x:Bind TileColor, Mode=OneWay}"/>
+                    </Grid.Background>
+                </Grid>
+
+                <!-- 图片背景 -->
+                <Grid x:Name="ImageLayer" x:Load="{x:Bind HasImage, Mode=OneWay}">
+                    <Image Source="{x:Bind ImageUrl, Mode=OneWay}" 
+                           Stretch="UniformToFill"
+                           Opacity="0.4"/>
+                    <Grid Background="#30000000"/>
+                </Grid>
+
+                <!-- 内容 -->
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 图标 -->
+                    <Viewbox Grid.Row="0" 
+                             Width="80" Height="80"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center">
+                        <FontIcon Glyph="{x:Bind IconGlyph, Mode=OneWay}" 
+                                  Foreground="White"/>
+                    </Viewbox>
+
+                    <!-- 标题 -->
+                    <TextBlock Grid.Row="1" 
+                               Text="{x:Bind Title, Mode=OneWay}"
+                               Foreground="White"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               Margin="0,0,0,8"/>
+
+                    <!-- 描述 -->
+                    <TextBlock Grid.Row="2"
+                               Text="{x:Bind Description, Mode=OneWay}"
+                               Foreground="#E0FFFFFF"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               MaxLines="2"/>
+                </Grid>
+
+                <Grid.Shadow>
+                    <ThemeShadow />
+                </Grid.Shadow>
+            </Grid>
+        </DataTemplate>
+
+        <!-- 宽磁贴模板 (4x2) -->
+        <DataTemplate x:Key="WideTileTemplate" x:DataType="local:DashboardTile">
+            <Grid CornerRadius="4"
+                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                  BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                  BorderThickness="1">
+                <Grid.BackgroundTransition>
+                    <BrushTransition Duration="0:0:0.2" />
+                </Grid.BackgroundTransition>
+
+                <!-- 亚克力背景 -->
+                <Grid>
+                    <Grid.Background>
+                        <AcrylicBrush TintColor="{x:Bind TileColor, Mode=OneWay}" 
+                                      TintOpacity="0.65"
+                                      TintLuminosityOpacity="0.85"
+                                      FallbackColor="{x:Bind TileColor, Mode=OneWay}"/>
+                    </Grid.Background>
+                </Grid>
+
+                <!-- 图片背景 -->
+                <Grid x:Name="ImageLayer" x:Load="{x:Bind HasImage, Mode=OneWay}">
+                    <Image Source="{x:Bind ImageUrl, Mode=OneWay}" 
+                           Stretch="UniformToFill"
+                           Opacity="0.35"/>
+                    <Grid Background="#35000000"/>
+                </Grid>
+
+                <!-- 内容 -->
+                <Grid Margin="24,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 图标 -->
+                    <Viewbox Grid.Column="0" 
+                             Width="90" Height="90"
+                             Margin="0,0,24,0"
+                             VerticalAlignment="Center">
+                        <FontIcon Glyph="{x:Bind IconGlyph, Mode=OneWay}" 
+                                  Foreground="White"/>
+                    </Viewbox>
+
+                    <!-- 文字内容 -->
+                    <StackPanel Grid.Column="1" 
+                                VerticalAlignment="Center">
+                        <TextBlock Text="{x:Bind Title, Mode=OneWay}"
+                                   Foreground="White"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   TextWrapping="Wrap"
+                                   MaxLines="2"/>
+                        <TextBlock Text="{x:Bind Description, Mode=OneWay}"
+                                   Foreground="#E0FFFFFF"
+                                   FontSize="13"
+                                   Margin="0,12,0,0"
+                                   TextWrapping="Wrap"
+                                   MaxLines="3"/>
+                    </StackPanel>
+                </Grid>
+
+                <Grid.Shadow>
+                    <ThemeShadow />
+                </Grid.Shadow>
+            </Grid>
+        </DataTemplate>
+
+        <!-- 大磁贴模板 (4x4) -->
+        <DataTemplate x:Key="LargeTileTemplate" x:DataType="local:DashboardTile">
+            <Grid CornerRadius="4"
+                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                  BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                  BorderThickness="1">
+                <Grid.BackgroundTransition>
+                    <BrushTransition Duration="0:0:0.2" />
+                </Grid.BackgroundTransition>
+
+                <!-- 亚克力背景 -->
+                <Grid>
+                    <Grid.Background>
+                        <AcrylicBrush TintColor="{x:Bind TileColor, Mode=OneWay}" 
+                                      TintOpacity="0.6"
+                                      TintLuminosityOpacity="0.85"
+                                      FallbackColor="{x:Bind TileColor, Mode=OneWay}"/>
+                    </Grid.Background>
+                </Grid>
+
+                <!-- 图片背景 -->
+                <Grid x:Name="ImageLayer" x:Load="{x:Bind HasImage, Mode=OneWay}">
+                    <Image Source="{x:Bind ImageUrl, Mode=OneWay}" 
+                           Stretch="UniformToFill"
+                           Opacity="0.45"/>
+                    <Grid Background="#25000000"/>
+                </Grid>
+
+                <!-- 内容 -->
+                <Grid Margin="28">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 图标 -->
+                    <Viewbox Grid.Row="0" 
+                             Width="120" Height="120"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center">
+                        <FontIcon Glyph="{x:Bind IconGlyph, Mode=OneWay}" 
+                                  Foreground="White"/>
+                    </Viewbox>
+
+                    <!-- 标题 -->
+                    <TextBlock Grid.Row="1" 
+                               Text="{x:Bind Title, Mode=OneWay}"
+                               Foreground="White"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               Margin="0,0,0,12"/>
+
+                    <!-- 描述 -->
+                    <TextBlock Grid.Row="2"
+                               Text="{x:Bind Description, Mode=OneWay}"
+                               Foreground="#E0FFFFFF"
+                               FontSize="14"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               MaxLines="4"/>
+                </Grid>
+
+                <Grid.Shadow>
+                    <ThemeShadow />
+                </Grid.Shadow>
+            </Grid>
+        </DataTemplate>
     </Page.Resources>
 
-    <Grid Background="{ThemeResource CardGradient1Brush}">
-        
+    <Grid>
+        <ScrollViewer HorizontalScrollMode="Disabled" 
+                      VerticalScrollMode="Auto"
+                      VerticalScrollBarVisibility="Auto"
+                      Padding="20">
+            <!-- 自定义拖拽容器 -->
+            <local:DraggableTilePanel x:Name="TilePanel"
+                                      TileItems="{x:Bind TileItems, Mode=OneWay}"
+                                      SmallTileTemplate="{StaticResource SmallTileTemplate}"
+                                      MediumTileTemplate="{StaticResource MediumTileTemplate}"
+                                      WideTileTemplate="{StaticResource WideTileTemplate}"
+                                      LargeTileTemplate="{StaticResource LargeTileTemplate}"
+                                      TileClicked="TilePanel_TileClicked"/>
+        </ScrollViewer>
     </Grid>
 </Page>

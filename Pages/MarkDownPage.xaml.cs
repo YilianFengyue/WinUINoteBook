@@ -1,10 +1,11 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.Web.WebView2.Core;
 using System;
-using System.Threading.Tasks;
-using System.Text.Json;
 using System.Diagnostics;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace App2.Pages
 {
@@ -22,22 +23,21 @@ namespace App2.Pages
 
         private async void InitializeEditor()
         {
-            if (EditorWebView != null)
-            {
-                EditorWebView.NavigationCompleted += EditorWebView_NavigationCompleted;
+            if (EditorWebView == null) return;
 
-                // 确保 CoreWebView2 初始化
-                await EditorWebView.EnsureCoreWebView2Async();
+            EditorWebView.NavigationCompleted += EditorWebView_NavigationCompleted;
 
-                // 设置消息监听器
-                EditorWebView.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
+            // 确保 CoreWebView2 初始化
+            await EditorWebView.EnsureCoreWebView2Async();
 
-                // 允许脚本访问
-                EditorWebView.CoreWebView2.Settings.AreDevToolsEnabled = true; // 开发阶段启用
-                EditorWebView.CoreWebView2.Settings.IsScriptEnabled = true;
+            // 允许脚本、调试
+            EditorWebView.CoreWebView2.Settings.IsScriptEnabled = true;
+            EditorWebView.CoreWebView2.Settings.AreDevToolsEnabled = true;
 
-                Debug.WriteLine("WebView2 初始化成功，消息监听器已设置");
-            }
+            // 监听来自前端的消息（用 JSON 通道）
+            EditorWebView.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
+
+            Debug.WriteLine("WebView2 初始化成功，消息监听器已设置");
         }
 
         private void EditorWebView_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
@@ -46,30 +46,27 @@ namespace App2.Pages
             {
                 Debug.WriteLine("TipTap Editor 加载成功");
 
-                // 延迟等待编辑器初始化
-                Task.Delay(2000).ContinueWith(_ =>
+                // 给前端一点时间初始化，然后做一次连通性测试
+                _ = Task.Delay(1000).ContinueWith(_ =>
                 {
-                    this.DispatcherQueue.TryEnqueue(() =>
+                    DispatcherQueue.TryEnqueue(() =>
                     {
-                        TestBridgeConnection();
+                        // 不直接发命令，等待 ready；只是日志
+                        Debug.WriteLine("等待前端 ready...");
                     });
                 });
             }
         }
 
-        /// <summary>
-        /// 处理来自 Vue 的消息
-        /// </summary>
+        /// <summary>接收来自 Vue 的消息（使用 WebMessageAsJson 适配对象/字符串）</summary>
         private void OnWebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
         {
             try
             {
-                // 关键：无论网页发的是对象还是字符串，这里都拿 JSON 字符串
-                var json = e.WebMessageAsJson;
-
+                var json = e.WebMessageAsJson; // 统一使用 JSON 字符串
                 var message = JsonSerializer.Deserialize<EditorMessage>(
                     json,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true } // 小写字段也能匹配
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
                 );
 
                 if (message == null)
@@ -87,9 +84,6 @@ namespace App2.Pages
             }
         }
 
-        /// <summary>
-        /// 处理编辑器消息
-        /// </summary>
         private void HandleEditorMessage(EditorMessage message)
         {
             switch (message.Event)
@@ -117,67 +111,88 @@ namespace App2.Pages
                 case "error":
                     OnEditorError(message.Payload);
                     break;
+
+                case "ping":
+                    Debug.WriteLine("收到 ping");
+                    break;
             }
         }
 
         private void OnEditorReady(JsonElement payload)
         {
             isEditorReady = true;
-            var version = payload.GetProperty("version").GetString();
-            var commandCount = payload.GetProperty("supportedCommands").GetArrayLength();
 
-            Debug.WriteLine($"编辑器就绪 - 版本: {version}, 支持命令数: {commandCount}");
-
-            // 更新 UI 状态
-            this.DispatcherQueue.TryEnqueue(() =>
+            try
             {
-                // 可以在这里更新状态栏或其他 UI 元素
+                var version = payload.GetProperty("version").GetString();
+                var commandCount = payload.GetProperty("supportedCommands").GetArrayLength();
+                Debug.WriteLine($"编辑器就绪 - 版本: {version}, 支持命令数: {commandCount}");
+            }
+            catch { /* 忽略解析异常 */ }
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                SavedText.Text = "已就绪";
             });
         }
 
         private void OnContentChanged(JsonElement payload)
         {
-            currentContent = payload.GetProperty("html").GetString();
-            var words = payload.GetProperty("words").GetInt32();
-            var characters = payload.GetProperty("characters").GetInt32();
-            var isEmpty = payload.GetProperty("isEmpty").GetBoolean();
-
-            Debug.WriteLine($"内容变化 - 字数: {words}, 字符数: {characters}, 空: {isEmpty}");
-
-            // 更新状态栏
-            this.DispatcherQueue.TryEnqueue(() =>
+            try
             {
-                UpdateStatusBar(words, characters, isEmpty);
-            });
+                currentContent = payload.GetProperty("html").GetString();
+                var words = payload.GetProperty("words").GetInt32();
+                var characters = payload.GetProperty("characters").GetInt32();
+                var isEmpty = payload.GetProperty("isEmpty").GetBoolean();
+
+                Debug.WriteLine($"内容变化 - 字数: {words}, 字符数: {characters}, 空: {isEmpty}");
+
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    UpdateStatusBar(words, characters, isEmpty);
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"解析 content-changed 失败: {ex.Message}");
+            }
         }
 
         private void OnSelectionChanged(JsonElement payload)
         {
-            var from = payload.GetProperty("from").GetInt32();
-            var to = payload.GetProperty("to").GetInt32();
-            var activeFormats = payload.GetProperty("activeFormats");
-
-            var isBold = activeFormats.GetProperty("bold").GetBoolean();
-            var isItalic = activeFormats.GetProperty("italic").GetBoolean();
-
-            Debug.WriteLine($"选区变化 - 位置: {from}-{to}, 粗体: {isBold}, 斜体: {isItalic}");
-
-            // 更新工具栏按钮状态
-            this.DispatcherQueue.TryEnqueue(() =>
+            try
             {
-                UpdateToolbarState(activeFormats);
-            });
+                var from = payload.GetProperty("from").GetInt32();
+                var to = payload.GetProperty("to").GetInt32();
+                var activeFormats = payload.GetProperty("activeFormats");
+
+                var isBold = activeFormats.TryGetProperty("bold", out var b) && b.GetBoolean();
+                var isItalic = activeFormats.TryGetProperty("italic", out var i) && i.GetBoolean();
+
+                Debug.WriteLine($"选区变化 - 位置: {from}-{to}, 粗体: {isBold}, 斜体: {isItalic}");
+
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    UpdateToolbarState(activeFormats);
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"解析 selection-changed 失败: {ex.Message}");
+            }
         }
 
         private void OnEditorError(JsonElement payload)
         {
-            var message = payload.GetProperty("message").GetString();
+            var message = payload.TryGetProperty("message", out var m) ? m.GetString() : "(no message)";
             Debug.WriteLine($"编辑器错误: {message}");
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                SavedText.Text = $"错误：{message}";
+            });
         }
 
-        /// <summary>
-        /// 发送命令到编辑器
-        /// </summary>
+        /// <summary>发送命令到编辑器（JSON 通道）</summary>
         private async Task SendEditorCommand(string command, object payload = null)
         {
             if (!isEditorReady)
@@ -186,19 +201,18 @@ namespace App2.Pages
                 return;
             }
 
-            var message = new
+            var msg = new
             {
                 type = "editor-command",
-                command = command,
-                payload = payload,
+                command,
+                payload,
                 timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
             };
 
-            var json = JsonSerializer.Serialize(message);
+            var json = JsonSerializer.Serialize(msg);
 
             try
             {
-                // 使用 PostWebMessageAsString 而不是 PostWebMessageAsJsonAsync
                 EditorWebView.CoreWebView2.PostWebMessageAsJson(json);
                 Debug.WriteLine($"发送命令: {command}");
             }
@@ -208,156 +222,103 @@ namespace App2.Pages
             }
         }
 
-        // ========== 工具栏事件处理 ==========
+        // ========== 工具栏事件处理（全部接上） ==========
 
-        private async void OnBold(object sender, RoutedEventArgs e)
+        // 基础格式
+        private async void OnBold(object sender, RoutedEventArgs e) => await SendEditorCommand("bold");
+        private async void OnItalic(object sender, RoutedEventArgs e) => await SendEditorCommand("italic");
+        private async void OnUnderline(object sender, RoutedEventArgs e) => await SendEditorCommand("underline");
+        private async void OnStrike(object sender, RoutedEventArgs e) => await SendEditorCommand("strike");
+        private async void OnCode(object sender, RoutedEventArgs e) => await SendEditorCommand("code");
+
+        // 段落 / 标题
+        private async void OnParagraph(object sender, RoutedEventArgs e) => await SendEditorCommand("paragraph");
+
+        private async void HeadingLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            await SendEditorCommand("bold");
+            if (HeadingLevelCombo.SelectedIndex < 0) return;
+            var level = HeadingLevelCombo.SelectedIndex + 1; // 1..6
+            await SendEditorCommand($"heading{level}");
         }
 
-        private async void OnItalic(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("italic");
-        }
+        // 对齐
+        private async void OnAlignLeft(object sender, RoutedEventArgs e) => await SendEditorCommand("alignLeft");
+        private async void OnAlignCenter(object sender, RoutedEventArgs e) => await SendEditorCommand("alignCenter");
+        private async void OnAlignRight(object sender, RoutedEventArgs e) => await SendEditorCommand("alignRight");
+        private async void OnAlignJustify(object sender, RoutedEventArgs e) => await SendEditorCommand("alignJustify");
 
-        private async void OnUnderline(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("underline");
-        }
+        // 列表
+        private async void OnBulletList(object sender, RoutedEventArgs e) => await SendEditorCommand("bulletList");
+        private async void OnOrderedList(object sender, RoutedEventArgs e) => await SendEditorCommand("orderedList");
+        private async void OnTaskList(object sender, RoutedEventArgs e) => await SendEditorCommand("taskList");
 
-        private async void OnStrike(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("strike");
-        }
+        // 缩进（注意：TipTap 侧若未修正，indent/outdent 可能与 sink/lift 对调）
+        private async void OnIndent(object sender, RoutedEventArgs e) => await SendEditorCommand("indent");
+        private async void OnOutdent(object sender, RoutedEventArgs e) => await SendEditorCommand("outdent");
 
-        private async void OnCode(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("code");
-        }
-
-        private async void OnHeading1(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("heading1");
-        }
-
-        private async void OnHeading2(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("heading2");
-        }
-
-        private async void OnParagraph(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("paragraph");
-        }
-
-        private async void OnAlignLeft(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("alignLeft");
-        }
-
-        private async void OnAlignCenter(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("alignCenter");
-        }
-
-        private async void OnAlignRight(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("alignRight");
-        }
-
-        private async void OnBulletList(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("bulletList");
-        }
-
-        private async void OnOrderedList(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("orderedList");
-        }
-
-        private async void OnTaskList(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("taskList");
-        }
-
+        // 插入
         private async void OnInsertLink(object sender, RoutedEventArgs e)
         {
-            // 可以弹出对话框获取链接信息
             await SendEditorCommand("insertLink", new { url = "https://example.com", text = "示例链接" });
         }
-
         private async void OnInsertImage(object sender, RoutedEventArgs e)
         {
-            // 可以弹出文件选择器
             await SendEditorCommand("insertImage", new { src = "https://via.placeholder.com/300x200", alt = "示例图片" });
         }
-
-        private async void OnInsertTable(object sender, RoutedEventArgs e)
+        private async void OnInsertVideo(object sender, RoutedEventArgs e)
         {
-            await SendEditorCommand("insertTable");
+            await SendEditorCommand("insertVideo", new { src = "https://www.w3schools.com/html/mov_bbb.mp4" });
         }
+        private async void OnInsertTable(object sender, RoutedEventArgs e) => await SendEditorCommand("insertTable"); // 需确保前端实现
 
-        private async void OnBlockquote(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("insertBlockquote");
-        }
+        // 特殊元素 / 代码块 / 分隔线 / 引用
+        private async void OnBlockquote(object sender, RoutedEventArgs e) => await SendEditorCommand("insertBlockquote");
+        private async void OnHorizontalRule(object sender, RoutedEventArgs e) => await SendEditorCommand("insertHorizontalRule");
+        private async void OnCodeBlock(object sender, RoutedEventArgs e) => await SendEditorCommand("insertCodeBlock");
 
-        private async void OnHorizontalRule(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("insertHorizontalRule");
-        }
+        // 格式 / 历史
+        private async void OnClearFormat(object sender, RoutedEventArgs e) => await SendEditorCommand("clearFormat");
+        private async void OnUndo(object sender, RoutedEventArgs e) => await SendEditorCommand("undo");
+        private async void OnRedo(object sender, RoutedEventArgs e) => await SendEditorCommand("redo");
 
-        private async void OnCodeBlock(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("insertCodeBlock");
-        }
+        // 视图
+        private async void OnToggleFullscreen(object sender, RoutedEventArgs e) => await SendEditorCommand("toggleFullscreen");
 
-        private async void OnClearFormat(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("clearFormat");
-        }
+        // 示例：颜色/高亮（前端已实现 setColor / setHighlight）
+        private async void OnSetColorDemo(object sender, RoutedEventArgs e)
+            => await SendEditorCommand("setColor", new { color = "#ff4d4f" });
+        private async void OnSetHighlightDemo(object sender, RoutedEventArgs e)
+            => await SendEditorCommand("setHighlight", new { color = "#ffe58f" });
 
-        private async void OnUndo(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("undo");
-        }
-
-        private async void OnRedo(object sender, RoutedEventArgs e)
-        {
-            await SendEditorCommand("redo");
-        }
-
-        // ========== UI 更新方法 ==========
+        // ========== UI 更新方法（可选完善） ==========
 
         private void UpdateStatusBar(int words, int characters, bool isEmpty)
         {
-            // 更新状态栏显示
-            // 需要在 XAML 中添加对应的 TextBlock 引用
+            WordsText.Text = $"字数: {words}";
+            CharsText.Text = $"字符: {characters}";
+            SavedText.Text = isEmpty ? "空文档" : "已更新";
         }
 
         private void UpdateToolbarState(JsonElement activeFormats)
         {
-            // 根据激活状态更新工具栏按钮
-            // 可以改变按钮的 IsChecked 状态
-        }
+            try
+            {
+                if (BtnBold != null && activeFormats.TryGetProperty("bold", out var b))
+                    BtnBold.IsChecked = b.GetBoolean();
 
-        // ========== 测试方法 ==========
+                if (BtnItalic != null && activeFormats.TryGetProperty("italic", out var i))
+                    BtnItalic.IsChecked = i.GetBoolean();
 
-        private async void TestBridgeConnection()
-        {
-            Debug.WriteLine("开始测试桥接连接...");
+                if (BtnUnderline != null && activeFormats.TryGetProperty("underline", out var u))
+                    BtnUnderline.IsChecked = u.GetBoolean();
 
-            // 等待一段时间再测试
-            await Task.Delay(1000);
-
-            // 测试基础命令
-            await SendEditorCommand("bold");
-            await Task.Delay(500);
-            await SendEditorCommand("italic");
-            await Task.Delay(500);
-            await SendEditorCommand("bold"); // 取消粗体
-
-            Debug.WriteLine("桥接测试完成");
+                if (BtnStrike != null && activeFormats.TryGetProperty("strike", out var s))
+                    BtnStrike.IsChecked = s.GetBoolean();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("UpdateToolbarState error: " + ex);
+            }
         }
 
         private void TopPivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
